@@ -1,17 +1,35 @@
+# Python
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
+
+# Virtual Environments
 venv/
 env/
 .venv/
-*.log
-local_settings.py
-db.sqlite3
-media/
+
+# Environment variables
 .env
 .env.*
+
+# Django
+db.sqlite3
+*.sqlite3
+media/
+staticfiles/
+
+# Logs
+*.log
+
+# IDEs
 .vscode/
 .idea/
+
+# OS
 Thumbs.db
 .DS_Store
+
+# Backups
+backup*/
+*.backup
