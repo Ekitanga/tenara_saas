@@ -1,0 +1,582 @@
+{% extends 'superadmin/base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Platform Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Dashboard Specific Styles */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid var(--border-color);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.5s ease forwards;
+        opacity: 0;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+    .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        border-radius: 16px 16px 0 0;
+    }
+
+    .stat-card.primary::before { background: linear-gradient(90deg, var(--primary), var(--primary-light)); }
+    .stat-card.success::before { background: linear-gradient(90deg, var(--success), #34d399); }
+    .stat-card.warning::before { background: linear-gradient(90deg, var(--warning), #fbbf24); }
+    .stat-card.danger::before { background: linear-gradient(90deg, var(--danger), #f87171); }
+
+    .stat-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    .stat-card.primary .stat-icon { background: rgba(99, 102, 241, 0.15); color: var(--primary-light); }
+    .stat-card.success .stat-icon { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .stat-card.warning .stat-icon { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .stat-card.danger .stat-icon { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+    .stat-trend {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+    }
+
+    .stat-trend.up {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+    }
+
+    .stat-trend.down {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 0.25rem;
+        background: linear-gradient(135deg, var(--white) 0%, var(--light) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .stat-label {
+        color: var(--light);
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    /* Section Cards */
+    .section-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .section-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+        animation: fadeInUp 0.5s ease forwards;
+        opacity: 0;
+        animation-delay: 0.5s;
+    }
+
+    .section-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .section-title {
+        font-size: 1rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .section-title i {
+        color: var(--primary);
+    }
+
+    .section-action {
+        color: var(--primary);
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        transition: all 0.2s ease;
+    }
+
+    .section-action:hover {
+        color: var(--primary-light);
+    }
+
+    .section-body {
+        padding: 1.5rem;
+    }
+
+    /* Recent Landlords Table */
+    .landlord-item {
+        display: flex;
+        align-items: center;
+        padding: 0.875rem 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .landlord-item:last-child {
+        border-bottom: none;
+    }
+
+    .landlord-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        margin-right: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .landlord-info {
+        flex: 1;
+    }
+
+    .landlord-name {
+        font-weight: 600;
+        margin-bottom: 0.125rem;
+    }
+
+    .landlord-email {
+        font-size: 0.8rem;
+        color: var(--light);
+    }
+
+    .landlord-meta {
+        text-align: right;
+    }
+
+    .landlord-date {
+        font-size: 0.75rem;
+        color: var(--light);
+    }
+
+    .landlord-status {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-trial {
+        background: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+    }
+
+    .status-active {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+    }
+
+    .status-expired {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+    }
+
+    /* Expiring Subscriptions */
+    .expiring-item {
+        display: flex;
+        align-items: center;
+        padding: 0.875rem 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .expiring-item:last-child {
+        border-bottom: none;
+    }
+
+    .expiring-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background: rgba(239, 68, 68, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #f87171;
+        margin-right: 1rem;
+    }
+
+    .expiring-info {
+        flex: 1;
+    }
+
+    .expiring-name {
+        font-weight: 600;
+        margin-bottom: 0.125rem;
+    }
+
+    .expiring-plan {
+        font-size: 0.8rem;
+        color: var(--light);
+    }
+
+    .expiring-days {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    /* Quick Stats Row */
+    .quick-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .quick-stat {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        animation: fadeInUp 0.5s ease forwards;
+        opacity: 0;
+        animation-delay: 0.6s;
+    }
+
+    .quick-stat-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+    }
+
+    .quick-stat-icon.blue { background: rgba(14, 165, 233, 0.15); color: #38bdf8; }
+    .quick-stat-icon.green { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .quick-stat-icon.purple { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+
+    .quick-stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .quick-stat-label {
+        font-size: 0.8rem;
+        color: var(--light);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: var(--light);
+    }
+
+    .empty-state i {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        opacity: 0.3;
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 992px) {
+        .section-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .quick-stats {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Main Stats -->
+<div class="stats-grid">
+    <div class="stat-card primary">
+        <div class="stat-header">
+            <div class="stat-icon">
+                <i class="fas fa-building-user"></i>
+            </div>
+            <span class="stat-trend up">
+                <i class="fas fa-arrow-up"></i> {{ new_landlords_30d }}
+            </span>
+        </div>
+        <div class="stat-value">{{ total_landlords }}</div>
+        <div class="stat-label">Total Landlords</div>
+    </div>
+
+    <div class="stat-card success">
+        <div class="stat-header">
+            <div class="stat-icon">
+                <i class="fas fa-credit-card"></i>
+            </div>
+            <span class="stat-trend up">
+                <i class="fas fa-check"></i> Active
+            </span>
+        </div>
+        <div class="stat-value">{{ active_subscriptions }}</div>
+        <div class="stat-label">Active Subscriptions</div>
+    </div>
+
+    <div class="stat-card warning">
+        <div class="stat-header">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <span class="stat-trend">Trial</span>
+        </div>
+        <div class="stat-value">{{ trial_subscriptions }}</div>
+        <div class="stat-label">Trial Accounts</div>
+    </div>
+
+    <div class="stat-card danger">
+        <div class="stat-header">
+            <div class="stat-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <span class="stat-trend up">
+                <i class="fas fa-arrow-up"></i> 30d
+            </span>
+        </div>
+        <div class="stat-value">KSh {{ revenue_30d|floatformat:0|default:"0" }}</div>
+        <div class="stat-label">Revenue (30 Days)</div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="quick-stats">
+    <div class="quick-stat">
+        <div class="quick-stat-icon blue">
+            <i class="fas fa-building"></i>
+        </div>
+        <div>
+            <div class="quick-stat-value">{{ total_properties }}</div>
+            <div class="quick-stat-label">Total Properties</div>
+        </div>
+    </div>
+
+    <div class="quick-stat">
+        <div class="quick-stat-icon green">
+            <i class="fas fa-door-open"></i>
+        </div>
+        <div>
+            <div class="quick-stat-value">{{ total_units }}</div>
+            <div class="quick-stat-label">Total Units ({{ occupancy_rate }}% Occupied)</div>
+        </div>
+    </div>
+
+    <div class="quick-stat">
+        <div class="quick-stat-icon purple">
+            <i class="fas fa-users"></i>
+        </div>
+        <div>
+            <div class="quick-stat-value">{{ total_tenants }}</div>
+            <div class="quick-stat-label">Total Tenants</div>
+        </div>
+    </div>
+</div>
+
+<!-- Section Grid -->
+<div class="section-grid">
+    <!-- Recent Landlords -->
+    <div class="section-card">
+        <div class="section-header">
+            <h3 class="section-title">
+                <i class="fas fa-user-plus"></i>
+                Recent Landlords
+            </h3>
+            <a href="{% url 'superadmin:landlords' %}" class="section-action">
+                View All <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        <div class="section-body">
+            {% if recent_landlords %}
+                {% for landlord in recent_landlords %}
+                <div class="landlord-item">
+                    <div class="landlord-avatar" style="background: linear-gradient(135deg, 
+                        {% cycle 'var(--primary)' 'var(--success)' 'var(--warning)' 'var(--secondary)' %}, 
+                        {% cycle 'var(--primary-light)' '#34d399' '#fbbf24' '#38bdf8' %});">
+                        {{ landlord.username|slice:":1"|upper }}
+                    </div>
+                    <div class="landlord-info">
+                        <div class="landlord-name">{{ landlord.username }}</div>
+                        <div class="landlord-email">{{ landlord.email }}</div>
+                    </div>
+                    <div class="landlord-meta">
+                        {% if landlord.landlord_profile and landlord.landlord_profile.subscription %}
+                            <span class="landlord-status status-{{ landlord.landlord_profile.subscription.status }}">
+                                {{ landlord.landlord_profile.subscription.status }}
+                            </span>
+                        {% endif %}
+                        <div class="landlord-date">{{ landlord.date_joined|timesince }} ago</div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-users"></i>
+                    <p>No landlords yet</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Expiring Subscriptions -->
+    <div class="section-card">
+        <div class="section-header">
+            <h3 class="section-title">
+                <i class="fas fa-exclamation-triangle"></i>
+                Expiring Soon
+            </h3>
+            <a href="{% url 'superadmin:subscriptions' %}?status=active" class="section-action">
+                View All <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        <div class="section-body">
+            {% if expiring_soon %}
+                {% for sub in expiring_soon %}
+                <div class="expiring-item">
+                    <div class="expiring-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="expiring-info">
+                        <div class="expiring-name">{{ sub.landlord.user.username }}</div>
+                        <div class="expiring-plan">{{ sub.plan.name }} Plan</div>
+                    </div>
+                    {% with days_left=sub.end_date|timesince %}
+                    <span class="expiring-days">
+                        Expires {{ sub.end_date|date:"M d" }}
+                    </span>
+                    {% endwith %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-check-circle"></i>
+                    <p>No subscriptions expiring soon</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Platform Summary -->
+<div class="section-card" style="animation-delay: 0.7s;">
+    <div class="section-header">
+        <h3 class="section-title">
+            <i class="fas fa-chart-bar"></i>
+            Platform Summary
+        </h3>
+    </div>
+    <div class="section-body">
+        <div class="quick-stats" style="margin-bottom: 0;">
+            <div class="quick-stat">
+                <div class="quick-stat-icon green">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div>
+                    <div class="quick-stat-value">KSh {{ total_revenue|floatformat:0|default:"0" }}</div>
+                    <div class="quick-stat-label">Total Revenue (All Time)</div>
+                </div>
+            </div>
+
+            <div class="quick-stat">
+                <div class="quick-stat-icon blue">
+                    <i class="fas fa-file-invoice"></i>
+                </div>
+                <div>
+                    <div class="quick-stat-value">{{ total_invoices }}</div>
+                    <div class="quick-stat-label">Invoices Generated</div>
+                </div>
+            </div>
+
+            <div class="quick-stat">
+                <div class="quick-stat-icon purple">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <div>
+                    <div class="quick-stat-value">{{ total_payments }}</div>
+                    <div class="quick-stat-label">Tenant Payments</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,445 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Tenant - TENARA{% endblock %}
+
+{% block content %}
+<style>
+    /* Premium Form Styles */
+    .form-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+    
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6b7280;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+        transition: color 0.2s ease;
+    }
+    
+    .back-link:hover {
+        color: #2563eb;
+    }
+    
+    .form-header {
+        margin-bottom: 2.5rem;
+    }
+    
+    .form-header h1 {
+        font-size: 2.25rem;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-header p {
+        color: #6b7280;
+        font-size: 1.125rem;
+    }
+    
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #f3f4f6;
+    }
+    
+    .section-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+    
+    .required-indicator {
+        color: #ef4444;
+        margin-left: 0.25rem;
+    }
+    
+    .input-wrapper {
+        position: relative;
+    }
+    
+    .input-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        font-size: 1.1rem;
+    }
+    
+    .form-control-premium {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        padding-left: 3rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+        background: white;
+    }
+    
+    .form-control-premium:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    
+    .form-control-premium:hover {
+        border-color: #cbd5e1;
+    }
+    
+    .input-hint {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .checkbox-wrapper {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        background: #f9fafb;
+        border-radius: 8px;
+        border: 2px solid #e5e7eb;
+        transition: all 0.2s ease;
+    }
+    
+    .checkbox-wrapper:hover {
+        background: #f3f4f6;
+        border-color: #cbd5e1;
+    }
+    
+    .checkbox-wrapper input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        margin-right: 0.75rem;
+        cursor: pointer;
+    }
+    
+    .checkbox-wrapper label {
+        margin: 0;
+        cursor: pointer;
+        font-weight: 500;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid #f3f4f6;
+    }
+    
+    .btn-premium {
+        padding: 0.875rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-primary-premium {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        color: white;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+    }
+    
+    .btn-primary-premium:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    }
+    
+    .btn-secondary-premium {
+        background: #f3f4f6;
+        color: #374151;
+        border: 2px solid #e5e7eb;
+    }
+    
+    .btn-secondary-premium:hover {
+        background: #e5e7eb;
+        color: #111827;
+    }
+    
+    .alert-premium {
+        padding: 1rem 1.25rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .alert-success {
+        background: #d1fae5;
+        color: #065f46;
+        border-left: 4px solid #10b981;
+    }
+    
+    .alert-error {
+        background: #fee2e2;
+        color: #991b1b;
+        border-left: 4px solid #ef4444;
+    }
+    
+    .alert-info {
+        background: #dbeafe;
+        color: #1e40af;
+        border-left: 4px solid #2563eb;
+    }
+    
+    .alert-warning {
+        background: #fef3c7;
+        color: #92400e;
+        border-left: 4px solid #f59e0b;
+    }
+    
+    @media (max-width: 768px) {
+        .form-container {
+            padding: 1rem;
+        }
+        
+        .form-section {
+            padding: 1.5rem 1rem;
+        }
+        
+        .form-actions {
+            flex-direction: column-reverse;
+        }
+        
+        .btn-premium {
+            width: 100%;
+            text-align: center;
+        }
+    }
+</style>
+
+<div class="form-container">
+    <!-- Back Link -->
+    <a href="{% url 'tenants:list' %}" class="back-link">
+        ← Back to Tenants
+    </a>
+    
+    <!-- Form Header -->
+    <div class="form-header">
+        <h1>Add New Tenant</h1>
+        <p>Complete the form below to onboard a new tenant to your property.</p>
+    </div>
+    
+    <!-- Messages -->
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert-premium alert-{{ message.tags }}">
+        <span style="font-size: 1.25rem;">
+            {% if message.tags == 'success' %}✓{% elif message.tags == 'error' %}✗{% elif message.tags == 'warning' %}⚠{% else %}ℹ{% endif %}
+        </span>
+        <span>{{ message }}</span>
+    </div>
+    {% endfor %}
+    {% endif %}
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <!-- Personal Information Section -->
+        <div class="form-section">
+            <div class="section-title">
+                <div class="section-icon">👤</div>
+                <span>Personal Information</span>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                <div class="form-group">
+                    <label>First Name <span class="required-indicator">*</span></label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">👤</span>
+                        <input type="text" name="first_name" class="form-control-premium" required placeholder="e.g., John">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Last Name <span class="required-indicator">*</span></label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">👤</span>
+                        <input type="text" name="last_name" class="form-control-premium" required placeholder="e.g., Doe">
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">📧</span>
+                        <input type="email" name="email" class="form-control-premium" placeholder="john.doe@example.com">
+                    </div>
+                    <div class="input-hint">
+                        <span>💡</span>
+                        <span>For sending invoices and notifications</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Phone Number <span class="required-indicator">*</span></label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">📱</span>
+                        <input type="tel" name="phone_number" class="form-control-premium" required placeholder="0712345678">
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                <div class="form-group">
+                    <label>National ID</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">🆔</span>
+                        <input type="text" name="national_id" class="form-control-premium" placeholder="12345678">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Emergency Contact Name</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">🚨</span>
+                        <input type="text" name="emergency_contact_name" class="form-control-premium" placeholder="Jane Doe">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Emergency Contact Phone</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">📞</span>
+                    <input type="tel" name="emergency_contact" class="form-control-premium" placeholder="0798765432">
+                </div>
+                <div class="input-hint">
+                    <span>💡</span>
+                    <span>Person to contact in case of emergency</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Lease Information Section -->
+        <div class="form-section">
+            <div class="section-title">
+                <div class="section-icon">🏠</div>
+                <span>Lease Information</span>
+            </div>
+            
+            <div class="form-group">
+                <label>Select Unit <span class="required-indicator">*</span></label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🏢</span>
+                    <select name="unit" class="form-control-premium" required style="padding-left: 3rem;">
+                        <option value="">Choose a vacant unit</option>
+                        {% for unit in vacant_units %}
+                        <option value="{{ unit.pk }}">
+                            {{ unit.unit_property.name }} - Unit {{ unit.unit_number }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="input-hint">
+                    <span>💡</span>
+                    <span>Only vacant units are shown</span>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                <div class="form-group">
+                    <label>Lease Start Date <span class="required-indicator">*</span></label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">📅</span>
+                        <input type="date" name="start_date" class="form-control-premium" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Deposit Amount (KES)</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">💰</span>
+                        <input type="number" name="deposit_amount" class="form-control-premium" step="0.01" placeholder="0.00">
+                    </div>
+                    <div class="input-hint">
+                        <span>💡</span>
+                        <span>Usually equivalent to 1-2 months rent</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <div class="checkbox-wrapper">
+                    <input class="form-check-input" type="checkbox" name="deposit_paid" id="depositPaid">
+                    <label class="form-check-label" for="depositPaid">
+                        ✓ Deposit has already been paid
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <a href="{% url 'tenants:list' %}" class="btn-premium btn-secondary-premium">Cancel</a>
+            <button type="submit" class="btn-premium btn-primary-premium">
+                ✓ Add Tenant
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

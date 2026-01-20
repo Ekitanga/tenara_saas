@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ reminder.title }} - TENARA{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem; max-width: 900px; margin: 0 auto;">
+    
+    <!-- Header -->
+    <div style="margin-bottom: 2rem;">
+        <a href="{% url 'reminders:list' %}" style="color: #6b7280; text-decoration: none; margin-bottom: 0.5rem; display: inline-block;">
+            ← Back to Reminders
+        </a>
+        <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">{{ reminder.title }}</h1>
+                <p style="color: #6b7280; font-size: 1.125rem;">
+                    {% if reminder.is_active %}
+                    <span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 600;">Active</span>
+                    {% else %}
+                    <span style="background: #f3f4f6; color: #6b7280; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 600;">Inactive</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <a href="{% url 'reminders:update' reminder.pk %}" style="padding: 0.75rem 1.5rem; border: 2px solid #2563eb; color: #2563eb; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                    Edit Reminder
+                </a>
+                <form method="post" action="{% url 'reminders:delete' reminder.pk %}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this reminder?');">
+                    {% csrf_token %}
+                    <button type="submit" style="padding: 0.75rem 1.5rem; background: #ef4444; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                        Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Status Banner -->
+    {% if reminder.is_due %}
+    <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+        <div style="font-weight: 700; color: #92400e; font-size: 1.125rem; margin-bottom: 0.25rem;">⚡ This reminder is due now!</div>
+        <div style="color: #78350f;">Scheduled for {{ reminder.reminder_date|date:"F d, Y" }} at {{ reminder.reminder_time }}</div>
+    </div>
+    {% endif %}
+    
+    <!-- Reminder Details -->
+    <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 2rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Reminder Details</h2>
+        
+        <div style="margin-bottom: 1.5rem;">
+            <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Description</div>
+            <div style="line-height: 1.6;">{{ reminder.description }}</div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
+            <div>
+                <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Reminder Date</div>
+                <div style="font-weight: 700; font-size: 1.125rem;">{{ reminder.reminder_date|date:"F d, Y" }}</div>
+            </div>
+            
+            <div>
+                <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Time</div>
+                <div style="font-weight: 700; font-size: 1.125rem;">{{ reminder.reminder_time }}</div>
+            </div>
+            
+            <div>
+                <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Frequency</div>
+                <div style="font-weight: 600;">{{ reminder.get_frequency_display }}</div>
+            </div>
+            
+            <div>
+                <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Property</div>
+                <div style="font-weight: 600;">{{ reminder.reminder_property.name|default:"All Properties" }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification Settings -->
+    <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 2rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Notification Settings</h2>
+        
+        <div style="display: grid; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #f9fafb; border-radius: 8px;">
+                <div style="font-size: 2rem;">
+                    {% if reminder.send_sms %}✓{% else %}✗{% endif %}
+                </div>
+                <div>
+                    <div style="font-weight: 600;">SMS Notification</div>
+                    <div style="font-size: 0.875rem; color: #6b7280;">
+                        {% if reminder.send_sms %}Enabled{% else %}Disabled{% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #f9fafb; border-radius: 8px;">
+                <div style="font-size: 2rem;">
+                    {% if reminder.send_email %}✓{% else %}✗{% endif %}
+                </div>
+                <div>
+                    <div style="font-weight: 600;">Email Notification</div>
+                    <div style="font-size: 0.875rem; color: #6b7280;">
+                        {% if reminder.send_email %}Enabled{% else %}Disabled{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Activity Log -->
+    <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Activity Log</h2>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <div>
+                <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Created</div>
+                <div style="font-weight: 600;">{{ reminder.created_at|date:"F d, Y H:i" }}</div>
+            </div>
+            
+            <div>
+                <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Last Updated</div>
+                <div style="font-weight: 600;">{{ reminder.updated_at|date:"F d, Y H:i" }}</div>
+            </div>
+            
+            {% if reminder.last_sent %}
+            <div style="grid-column: 1 / -1;">
+                <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Last Sent</div>
+                <div style="font-weight: 600;">{{ reminder.last_sent|date:"F d, Y H:i" }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+</div>
+{% endblock %}

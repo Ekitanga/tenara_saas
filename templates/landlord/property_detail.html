@@ -1,0 +1,731 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ property.name }} - TENARA{% endblock %}
+
+{% block content %}
+<style>
+    /* Premium Property Detail Styles */
+    .property-detail-container {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* Back Link */
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6b7280;
+        text-decoration: none;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        margin-bottom: 1rem;
+        transition: all 0.2s ease;
+    }
+
+    .back-link:hover {
+        color: #2563eb;
+    }
+
+    /* Page Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+
+    .property-profile {
+        display: flex;
+        align-items: flex-start;
+        gap: 1.25rem;
+    }
+
+    .property-icon-large {
+        width: 72px;
+        height: 72px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        flex-shrink: 0;
+    }
+
+    .property-info h1 {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #111827;
+        margin: 0 0 0.375rem 0;
+        letter-spacing: -0.025em;
+    }
+
+    .property-location {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6b7280;
+        font-size: 1rem;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-primary-gradient {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        color: white;
+        padding: 0.75rem 1.25rem;
+        text-decoration: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary-gradient:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+        background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-outline {
+        padding: 0.75rem 1.25rem;
+        border: 2px solid #e5e7eb;
+        color: #374151;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        background: white;
+    }
+
+    .btn-outline:hover {
+        border-color: #2563eb;
+        color: #2563eb;
+        background: #eff6ff;
+        text-decoration: none;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+
+    @media (max-width: 1024px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 640px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+    }
+
+    .stat-card.gray::before { background: linear-gradient(to bottom, #9ca3af, #6b7280); }
+    .stat-card.green::before { background: linear-gradient(to bottom, #10b981, #059669); }
+    .stat-card.amber::before { background: linear-gradient(to bottom, #f59e0b, #d97706); }
+    .stat-card.blue::before { background: linear-gradient(to bottom, #3b82f6, #2563eb); }
+
+    .stat-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .stat-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.125rem;
+    }
+
+    .stat-icon.gray { background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); }
+    .stat-icon.green { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); }
+    .stat-icon.amber { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); }
+    .stat-icon.blue { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #111827;
+        line-height: 1;
+    }
+
+    .stat-value.green { color: #059669; }
+    .stat-value.amber { color: #d97706; }
+    .stat-value.blue { color: #2563eb; }
+
+    /* Description Card */
+    .description-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        margin-bottom: 2rem;
+    }
+
+    .description-title {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .description-text {
+        color: #4b5563;
+        line-height: 1.6;
+    }
+
+    /* Premium Card */
+    .premium-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        transition: all 0.2s ease;
+        margin-bottom: 2rem;
+    }
+
+    .premium-card:hover {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #f3f4f6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(to bottom, #fafafa, white);
+    }
+
+    .card-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #111827;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-action {
+        color: #2563eb;
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .card-action:hover {
+        text-decoration: underline;
+    }
+
+    /* Premium Table */
+    .premium-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .premium-table thead tr {
+        background: #f9fafb;
+    }
+
+    .premium-table th {
+        text-align: left;
+        padding: 0.875rem 1rem;
+        font-weight: 600;
+        font-size: 0.75rem;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .premium-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #f3f4f6;
+        vertical-align: middle;
+        font-size: 0.9375rem;
+    }
+
+    .premium-table tbody tr {
+        transition: all 0.15s ease;
+    }
+
+    .premium-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .premium-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Unit Number */
+    .unit-number {
+        font-weight: 700;
+        color: #111827;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .unit-badge {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #4338ca;
+    }
+
+    /* Rent Amount */
+    .rent-amount {
+        font-weight: 700;
+        color: #059669;
+    }
+
+    /* Fee Text */
+    .fee-text {
+        font-size: 0.875rem;
+        color: #374151;
+    }
+
+    .fee-text.metered {
+        color: #2563eb;
+        font-style: italic;
+    }
+
+    /* Status Pills */
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-pill.occupied {
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        color: #065f46;
+    }
+
+    .status-pill.vacant {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        color: #92400e;
+    }
+
+    /* Tenant Name */
+    .tenant-name {
+        font-weight: 500;
+        color: #111827;
+    }
+
+    .tenant-name.empty {
+        color: #9ca3af;
+    }
+
+    /* Action Links */
+    .action-links {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    .action-link {
+        color: #2563eb;
+        text-decoration: none;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        transition: all 0.15s ease;
+    }
+
+    .action-link:hover {
+        color: #1d4ed8;
+        text-decoration: underline;
+    }
+
+    .delete-form {
+        display: inline;
+    }
+
+    .delete-btn {
+        color: #ef4444;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        text-decoration: underline;
+        padding: 0;
+    }
+
+    .delete-btn:hover {
+        color: #dc2626;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    .empty-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-text {
+        color: #6b7280;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Danger Zone */
+    .danger-zone {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        border-radius: 16px;
+        border: 1px solid #fecaca;
+    }
+
+    .danger-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .danger-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #991b1b;
+        margin: 0;
+    }
+
+    .danger-text {
+        color: #7f1d1d;
+        font-size: 0.9375rem;
+        margin-bottom: 1rem;
+    }
+
+    .btn-danger {
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+    }
+
+    .btn-danger:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .property-detail-container {
+            padding: 1rem;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .header-actions {
+            width: 100%;
+        }
+
+        .header-actions a {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .premium-table th,
+        .premium-table td {
+            padding: 0.75rem 0.5rem;
+            font-size: 0.8125rem;
+        }
+
+        .unit-badge {
+            display: none;
+        }
+    }
+</style>
+
+<div class="property-detail-container">
+    <!-- Back Link -->
+    <a href="{% url 'property_list' %}" class="back-link">
+        <span>←</span> Back to Properties
+    </a>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="property-profile">
+            <div class="property-icon-large">🏢</div>
+            <div class="property-info">
+                <h1>{{ property.name }}</h1>
+                <div class="property-location">
+                    <span>📍</span> {{ property.location }}
+                </div>
+            </div>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'unit_create' %}?property={{ property.pk }}" class="btn-primary-gradient">
+                <span>+</span> Add Unit
+            </a>
+            <a href="{% url 'property_update' property.pk %}" class="btn-outline">
+                <span>✏️</span> Edit Property
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card gray">
+            <div class="stat-header">
+                <span class="stat-label">Total Units</span>
+                <div class="stat-icon gray">🚪</div>
+            </div>
+            <div class="stat-value">{{ property.get_total_units }}</div>
+        </div>
+
+        <div class="stat-card green">
+            <div class="stat-header">
+                <span class="stat-label">Occupied</span>
+                <div class="stat-icon green">✅</div>
+            </div>
+            <div class="stat-value green">{{ property.get_occupied_units }}</div>
+        </div>
+
+        <div class="stat-card amber">
+            <div class="stat-header">
+                <span class="stat-label">Vacant</span>
+                <div class="stat-icon amber">📭</div>
+            </div>
+            <div class="stat-value amber">{{ property.get_vacant_units }}</div>
+        </div>
+
+        <div class="stat-card blue">
+            <div class="stat-header">
+                <span class="stat-label">Occupancy Rate</span>
+                <div class="stat-icon blue">📊</div>
+            </div>
+            <div class="stat-value blue">{{ property.get_occupancy_rate|floatformat:0 }}%</div>
+        </div>
+    </div>
+
+    <!-- Description -->
+    {% if property.description %}
+    <div class="description-card">
+        <h3 class="description-title">
+            <span>📝</span> Description
+        </h3>
+        <p class="description-text">{{ property.description }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Units List -->
+    <div class="premium-card">
+        <div class="card-header">
+            <h2 class="card-title">
+                <span>🏠</span> Units
+            </h2>
+            <a href="{% url 'unit_create' %}?property={{ property.pk }}" class="card-action">
+                + Add Unit
+            </a>
+        </div>
+
+        {% if units %}
+        <div style="overflow-x: auto;">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th>Unit</th>
+                        <th>Type</th>
+                        <th>Rent</th>
+                        <th>Water</th>
+                        <th>Garbage</th>
+                        <th>Status</th>
+                        <th>Tenant</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for unit in units %}
+                    <tr>
+                        <td>
+                            <span class="unit-number">
+                                <span class="unit-badge">{{ forloop.counter }}</span>
+                                {{ unit.unit_number }}
+                            </span>
+                        </td>
+                        <td>{{ unit.get_unit_type_display }}</td>
+                        <td><span class="rent-amount">KES {{ unit.monthly_rent|floatformat:0 }}</span></td>
+                        <td>
+                            {% if unit.water_billing_type == 'fixed' %}
+                                <span class="fee-text">KES {{ unit.water_fixed_amount|floatformat:0 }}</span>
+                            {% elif unit.water_billing_type == 'metered' %}
+                                <span class="fee-text metered">Metered</span>
+                            {% else %}
+                                <span class="fee-text">Included</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="fee-text">KES {{ unit.garbage_fee|floatformat:0 }}</span></td>
+                        <td>
+                            {% if unit.is_occupied %}
+                            <span class="status-pill occupied">
+                                <span>●</span> Occupied
+                            </span>
+                            {% else %}
+                            <span class="status-pill vacant">
+                                <span>○</span> Vacant
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if unit.get_current_tenant %}
+                            <span class="tenant-name">{{ unit.get_current_tenant.user.get_full_name }}</span>
+                            {% else %}
+                            <span class="tenant-name empty">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-links">
+                                <a href="{% url 'unit_update' unit.pk %}" class="action-link">Edit</a>
+                                {% if not unit.is_occupied %}
+                                <form method="post" action="{% url 'unit_delete' unit.pk %}" class="delete-form" onsubmit="return confirm('Are you sure you want to delete this unit?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="delete-btn">Delete</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">🏠</div>
+            <h3 class="empty-title">No Units Yet</h3>
+            <p class="empty-text">Add units to start managing tenants for this property.</p>
+            <a href="{% url 'unit_create' %}?property={{ property.pk }}" class="btn-primary-gradient">
+                <span>+</span> Add First Unit
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Danger Zone -->
+    {% if not units %}
+    <div class="danger-zone">
+        <div class="danger-header">
+            <span>⚠️</span>
+            <h3 class="danger-title">Danger Zone</h3>
+        </div>
+        <p class="danger-text">Once you delete a property, there is no going back. Please be certain.</p>
+        <form method="post" action="{% url 'property_delete' property.pk %}" onsubmit="return confirm('Are you absolutely sure? This action cannot be undone.');">
+            {% csrf_token %}
+            <button type="submit" class="btn-danger">
+                Delete Property
+            </button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

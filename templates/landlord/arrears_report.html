@@ -1,0 +1,744 @@
+{% extends 'base.html' %} {% block title %}Arrears Report - TENARA{% endblock %}
+{% block content %}
+<div style="padding: 2rem; max-width: 1400px; margin: 0 auto">
+  <!-- Header -->
+  <div style="margin-bottom: 2rem">
+    <a
+      href="{% url 'reports:dashboard' %}"
+      style="
+        color: #6b7280;
+        text-decoration: none;
+        margin-bottom: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 500;
+        transition: color 0.2s;
+      "
+      onmouseover="this.style.color = '#2563eb'"
+      onmouseout="this.style.color = '#6b7280'"
+    >
+      <span style="font-size: 1.25rem">←</span> Back to Reports
+    </a>
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 1rem;
+      "
+    >
+      <div>
+        <h1
+          style="
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+          "
+        >
+          Arrears Report
+        </h1>
+        <p style="color: #6b7280; font-size: 1.125rem">
+          Outstanding balances as of {{ today|date:"F d, Y" }}
+        </p>
+      </div>
+      <div style="display: flex; gap: 1rem">
+        <button
+          onclick="window.print()"
+          style="
+            padding: 0.75rem 1.5rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            background: white;
+            color: #1f2937;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+          "
+          onmouseover="
+            this.style.borderColor = '#2563eb';
+            this.style.color = '#2563eb';
+            this.style.transform = 'translateY(-2px)';
+          "
+          onmouseout="
+            this.style.borderColor = '#e5e7eb';
+            this.style.color = '#1f2937';
+            this.style.transform = 'translateY(0)';
+          "
+        >
+          🖨️ Print Report
+        </button>
+        <button
+          onclick="alert('Send reminders feature coming soon!')"
+          style="
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+          "
+          onmouseover="
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 4px 12px rgba(245,158,11,0.4)';
+          "
+          onmouseout="
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 2px 8px rgba(245,158,11,0.3)';
+          "
+        >
+          📨 Send Reminders
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Cards - Enhanced -->
+  <div
+    style="
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    "
+  >
+    <div
+      style="
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        padding: 1.75rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px rgba(239, 68, 68, 0.15);
+        transition: all 0.3s;
+      "
+      onmouseover="
+        this.style.transform = 'translateY(-4px)';
+        this.style.boxShadow = '0 8px 16px rgba(239,68,68,0.25)';
+      "
+      onmouseout="
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = '0 4px 6px rgba(239,68,68,0.15)';
+      "
+    >
+      <div
+        style="
+          color: #991b1b;
+          font-size: 0.75rem;
+          font-weight: 700;
+          margin-bottom: 0.75rem;
+          letter-spacing: 0.5px;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        "
+      >
+        <span style="font-size: 1.5rem">💸</span> TOTAL ARREARS
+      </div>
+      <div
+        style="
+          font-size: 2.5rem;
+          font-weight: 800;
+          color: #dc2626;
+          margin-bottom: 0.5rem;
+        "
+      >
+        KES {{ total_arrears|floatformat:0|default:0 }}
+      </div>
+      <div style="font-size: 0.875rem; color: #b91c1c; font-weight: 500">
+        All outstanding balances
+      </div>
+    </div>
+
+    <div
+      style="
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        padding: 1.75rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px rgba(245, 158, 11, 0.15);
+        transition: all 0.3s;
+      "
+      onmouseover="
+        this.style.transform = 'translateY(-4px)';
+        this.style.boxShadow = '0 8px 16px rgba(245,158,11,0.25)';
+      "
+      onmouseout="
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = '0 4px 6px rgba(245,158,11,0.15)';
+      "
+    >
+      <div
+        style="
+          color: #92400e;
+          font-size: 0.75rem;
+          font-weight: 700;
+          margin-bottom: 0.75rem;
+          letter-spacing: 0.5px;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        "
+      >
+        <span style="font-size: 1.5rem">📋</span> OVERDUE INVOICES
+      </div>
+      <div
+        style="
+          font-size: 2.5rem;
+          font-weight: 800;
+          color: #d97706;
+          margin-bottom: 0.5rem;
+        "
+      >
+        {{ overdue_count|default:0 }}
+      </div>
+      <div style="font-size: 0.875rem; color: #b45309; font-weight: 500">
+        Past due date
+      </div>
+    </div>
+
+    <div
+      style="
+        background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+        padding: 1.75rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px rgba(139, 92, 246, 0.15);
+        transition: all 0.3s;
+      "
+      onmouseover="
+        this.style.transform = 'translateY(-4px)';
+        this.style.boxShadow = '0 8px 16px rgba(139,92,246,0.25)';
+      "
+      onmouseout="
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = '0 4px 6px rgba(139,92,246,0.15)';
+      "
+    >
+      <div
+        style="
+          color: #5b21b6;
+          font-size: 0.75rem;
+          font-weight: 700;
+          margin-bottom: 0.75rem;
+          letter-spacing: 0.5px;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        "
+      >
+        <span style="font-size: 1.5rem">👥</span> TENANTS IN ARREARS
+      </div>
+      <div
+        style="
+          font-size: 2.5rem;
+          font-weight: 800;
+          color: #7c3aed;
+          margin-bottom: 0.5rem;
+        "
+      >
+        {{ tenants_in_arrears|default:0 }}
+      </div>
+      <div style="font-size: 0.875rem; color: #6d28d9; font-weight: 500">
+        With unpaid balance
+      </div>
+    </div>
+
+    <div
+      style="
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        padding: 1.75rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px rgba(107, 114, 128, 0.15);
+        transition: all 0.3s;
+      "
+      onmouseover="
+        this.style.transform = 'translateY(-4px)';
+        this.style.boxShadow = '0 8px 16px rgba(107,114,128,0.25)';
+      "
+      onmouseout="
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = '0 4px 6px rgba(107,114,128,0.15)';
+      "
+    >
+      <div
+        style="
+          color: #374151;
+          font-size: 0.75rem;
+          font-weight: 700;
+          margin-bottom: 0.75rem;
+          letter-spacing: 0.5px;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        "
+      >
+        <span style="font-size: 1.5rem">📊</span> AVERAGE ARREARS
+      </div>
+      <div
+        style="
+          font-size: 2.5rem;
+          font-weight: 800;
+          color: #1f2937;
+          margin-bottom: 0.5rem;
+        "
+      >
+        KES {{ average_arrears|floatformat:0|default:0 }}
+      </div>
+      <div style="font-size: 0.875rem; color: #4b5563; font-weight: 500">
+        Per tenant
+      </div>
+    </div>
+  </div>
+
+  <!-- Arrears by Tenant -->
+  <div
+    style="
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      margin-bottom: 2rem;
+      border: 1px solid #f3f4f6;
+    "
+  >
+    <h2
+      style="
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: #1f2937;
+      "
+    >
+      Arrears by Tenant
+    </h2>
+
+    {% if arrears_by_tenant %}
+    <div style="overflow-x: auto">
+      <table style="width: 100%; border-collapse: collapse">
+        <thead>
+          <tr
+            style="
+              background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+              border-bottom: 2px solid #e5e7eb;
+            "
+          >
+            <th
+              style="
+                text-align: left;
+                padding: 1rem;
+                font-weight: 700;
+                color: #374151;
+                font-size: 0.875rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Tenant
+            </th>
+            <th
+              style="
+                text-align: left;
+                padding: 1rem;
+                font-weight: 700;
+                color: #374151;
+                font-size: 0.875rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Property/Unit
+            </th>
+            <th
+              style="
+                text-align: left;
+                padding: 1rem;
+                font-weight: 700;
+                color: #374151;
+                font-size: 0.875rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Phone
+            </th>
+            <th
+              style="
+                text-align: left;
+                padding: 1rem;
+                font-weight: 700;
+                color: #374151;
+                font-size: 0.875rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Total Owed
+            </th>
+            <th
+              style="
+                text-align: left;
+                padding: 1rem;
+                font-weight: 700;
+                color: #374151;
+                font-size: 0.875rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Oldest Invoice
+            </th>
+            <th
+              style="
+                text-align: left;
+                padding: 1rem;
+                font-weight: 700;
+                color: #374151;
+                font-size: 0.875rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Days Overdue
+            </th>
+            <th
+              style="
+                text-align: left;
+                padding: 1rem;
+                font-weight: 700;
+                color: #374151;
+                font-size: 0.875rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in arrears_by_tenant %}
+          <tr
+            style="border-bottom: 1px solid #f3f4f6; transition: all 0.2s; {% if item.days_overdue > 60 %}background: #fef2f2;{% elif item.days_overdue > 30 %}background: #fffbeb;{% else %}background: white;{% endif %}"
+            onmouseover="this.style.background = '#f9fafb'"
+            onmouseout="
+              this.style.background =
+                '{% if item.days_overdue > 60 %}#fef2f2{% elif item.days_overdue > 30 %}#fffbeb{% else %}white{% endif %}'
+            "
+          >
+            <td style="padding: 1rem">
+              <div style="display: flex; align-items: center; gap: 0.75rem">
+                <div
+                  style="
+                    width: 2.5rem;
+                    height: 2.5rem;
+                    border-radius: 50%;
+                    background: linear-gradient(
+                      135deg,
+                      #f59e0b 0%,
+                      #d97706 100%
+                    );
+                    color: white;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: 700;
+                    font-size: 0.875rem;
+                  "
+                >
+                  {{ item.tenant_name|slice:":1"|upper }}
+                </div>
+                <div>
+                  <div style="font-weight: 600; color: #1f2937">
+                    {{ item.tenant_name }}
+                  </div>
+                  <div style="font-size: 0.875rem; color: #6b7280">
+                    {{ item.tenant_email|default:"-" }}
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td style="padding: 1rem">
+              <div style="font-weight: 600; color: #1f2937">
+                {{ item.property_name }}
+              </div>
+              <div style="font-size: 0.875rem; color: #6b7280">
+                Unit {{ item.unit_number }}
+              </div>
+            </td>
+            <td style="padding: 1rem">
+              <a
+                href="tel:{{ item.tenant_phone }}"
+                style="color: #2563eb; text-decoration: none; font-weight: 500"
+                >{{ item.tenant_phone }}</a
+              >
+            </td>
+            <td
+              style="
+                padding: 1rem;
+                font-weight: 700;
+                color: #dc2626;
+                font-size: 1.125rem;
+              "
+            >
+              KES {{ item.total_arrears|floatformat:0 }}
+            </td>
+            <td style="padding: 1rem; color: #6b7280">
+              {{ item.oldest_invoice_date|date:"M d, Y" }}
+            </td>
+            <td style="padding: 1rem">
+              <span
+                style="background: {% if item.days_overdue > 60 %}#fee2e2{% elif item.days_overdue > 30 %}#fef3c7{% else %}#dbeafe{% endif %};
+                                         color: {% if item.days_overdue > 60 %}#991b1b{% elif item.days_overdue > 30 %}#92400e{% else %}#1e40af{% endif %};
+                                         padding: 0.375rem 0.875rem; border-radius: 12px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.3px;"
+              >
+                {{ item.days_overdue }} days
+              </span>
+            </td>
+            <td style="padding: 1rem">
+              <div style="display: flex; gap: 0.75rem">
+                <a
+                  href="{% url 'tenants:detail' item.lease_pk %}"
+                  style="
+                    color: #2563eb;
+                    text-decoration: none;
+                    font-weight: 600;
+                    font-size: 0.875rem;
+                    transition: color 0.2s;
+                  "
+                  onmouseover="this.style.color = '#1d4ed8'"
+                  onmouseout="this.style.color = '#2563eb'"
+                  >View</a
+                >
+                <a
+                  href="{% url 'payments:record_manual' %}?tenant={{ item.tenant_pk }}"
+                  style="
+                    color: #059669;
+                    text-decoration: none;
+                    font-weight: 600;
+                    font-size: 0.875rem;
+                    transition: color 0.2s;
+                  "
+                  onmouseover="this.style.color = '#047857'"
+                  onmouseout="this.style.color = '#059669'"
+                  >Pay</a
+                >
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr
+            style="
+              background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+              font-weight: 700;
+            "
+          >
+            <td
+              colspan="3"
+              style="padding: 1rem; font-size: 1rem; color: #1f2937"
+            >
+              TOTAL
+            </td>
+            <td style="padding: 1rem; color: #dc2626; font-size: 1.375rem">
+              KES {{ total_arrears|floatformat:0|default:0 }}
+            </td>
+            <td colspan="3"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 4rem; color: #6b7280">
+      <div style="font-size: 4rem; margin-bottom: 1rem">✓</div>
+      <p style="font-size: 1.25rem; font-weight: 600; color: #059669">
+        No arrears! All tenants are up to date.
+      </p>
+      <p style="font-size: 1rem; margin-top: 0.5rem">
+        Everyone has paid their rent on time.
+      </p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Arrears by Property -->
+  <div
+    style="
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      border: 1px solid #f3f4f6;
+    "
+  >
+    <h2
+      style="
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: #1f2937;
+      "
+    >
+      Arrears by Property
+    </h2>
+
+    {% if arrears_by_property %}
+    <div style="overflow-x: auto">
+      <table style="width: 100%; border-collapse: collapse">
+        <thead>
+          <tr
+            style="
+              background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+              border-bottom: 2px solid #e5e7eb;
+            "
+          >
+            <th
+              style="
+                text-align: left;
+                padding: 1rem;
+                font-weight: 700;
+                color: #374151;
+                font-size: 0.875rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Property
+            </th>
+            <th
+              style="
+                text-align: left;
+                padding: 1rem;
+                font-weight: 700;
+                color: #374151;
+                font-size: 0.875rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Total Units
+            </th>
+            <th
+              style="
+                text-align: left;
+                padding: 1rem;
+                font-weight: 700;
+                color: #374151;
+                font-size: 0.875rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Units in Arrears
+            </th>
+            <th
+              style="
+                text-align: left;
+                padding: 1rem;
+                font-weight: 700;
+                color: #374151;
+                font-size: 0.875rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Total Arrears
+            </th>
+            <th
+              style="
+                text-align: left;
+                padding: 1rem;
+                font-weight: 700;
+                color: #374151;
+                font-size: 0.875rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              % of Total
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in arrears_by_property %}
+          <tr
+            style="
+              border-bottom: 1px solid #f3f4f6;
+              transition: background 0.2s;
+            "
+            onmouseover="this.style.background = '#f9fafb'"
+            onmouseout="this.style.background = 'white'"
+          >
+            <td style="padding: 1rem; font-weight: 600; color: #1f2937">
+              {{ item.property_name }}
+            </td>
+            <td style="padding: 1rem; color: #6b7280">
+              {{ item.total_units }}
+            </td>
+            <td style="padding: 1rem; color: #d97706; font-weight: 600">
+              {{ item.units_in_arrears }}
+            </td>
+            <td
+              style="
+                padding: 1rem;
+                color: #dc2626;
+                font-weight: 700;
+                font-size: 1.125rem;
+              "
+            >
+              KES {{ item.total_arrears|floatformat:0 }}
+            </td>
+            <td style="padding: 1rem">
+              <div style="display: flex; align-items: center; gap: 0.75rem">
+                <div
+                  style="
+                    flex: 1;
+                    height: 10px;
+                    background: #f3f4f6;
+                    border-radius: 9999px;
+                    overflow: hidden;
+                  "
+                >
+                  <div
+                    style="height: 100%; background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%); width: {{ item.percentage }}%; transition: width 0.3s;"
+                  ></div>
+                </div>
+                <span style="font-weight: 700; color: #1f2937; min-width: 3rem"
+                  >{{ item.percentage|floatformat:1 }}%</span
+                >
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p style="text-align: center; color: #6b7280; padding: 3rem">
+      No property data available
+    </p>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+  @media print {
+    nav,
+    button,
+    a[href*="reports:dashboard"] {
+      display: none !important;
+    }
+  }
+</style>
+{% endblock %}

@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+
+{% block title %}Expenses Report - TENARA{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem; max-width: 1400px; margin: 0 auto;">
+
+    <!-- Header -->
+    <div style="margin-bottom: 2rem;">
+        <a href="{% url 'reports:dashboard' %}" style="color: #6b7280; text-decoration: none; margin-bottom: 0.75rem; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 500; transition: color 0.2s;"
+           onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#6b7280'">
+            <span style="font-size: 1.25rem;">←</span> Back to Reports
+        </a>
+        <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;">
+            <div>
+                <h1 style="font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem;">Expenses Report</h1>
+                <p style="color: #6b7280; font-size: 1.125rem;">{{ start_date|date:"M d, Y" }} - {{ end_date|date:"M d, Y" }}</p>
+            </div>
+            <button onclick="window.print()" style="padding: 0.75rem 1.5rem; border: 2px solid #e5e7eb; border-radius: 10px; background: white; color: #1f2937; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem;"
+                    onmouseover="this.style.borderColor='#ef4444'; this.style.color='#ef4444'; this.style.transform='translateY(-2px)'"
+                    onmouseout="this.style.borderColor='#e5e7eb'; this.style.color='#1f2937'; this.style.transform='translateY(0)'">
+                🖨️ Print Report
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Cards - Enhanced -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+        <div style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); padding: 1.75rem; border-radius: 16px; box-shadow: 0 4px 6px rgba(239,68,68,0.15); transition: all 0.3s;"
+             onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(239,68,68,0.25)'"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(239,68,68,0.15)'">
+            <div style="color: #991b1b; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.75rem; letter-spacing: 0.5px; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.5rem;">💸</span> TOTAL EXPENSES
+            </div>
+            <div style="font-size: 2.5rem; font-weight: 800; color: #dc2626; margin-bottom: 0.5rem;">KES {{ total_expenses|floatformat:0|default:0 }}</div>
+            <div style="font-size: 0.875rem; color: #b91c1c; font-weight: 500;">All costs</div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 1.75rem; border-radius: 16px; box-shadow: 0 4px 6px rgba(245,158,11,0.15); transition: all 0.3s;"
+             onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(245,158,11,0.25)'"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(245,158,11,0.15)'">
+            <div style="color: #92400e; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.75rem; letter-spacing: 0.5px; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.5rem;">📊</span> AVERAGE MONTHLY
+            </div>
+            <div style="font-size: 2.5rem; font-weight: 800; color: #d97706; margin-bottom: 0.5rem;">KES {{ average_monthly|floatformat:0|default:0 }}</div>
+            <div style="font-size: 0.875rem; color: #b45309; font-weight: 500;">Per month</div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%); padding: 1.75rem; border-radius: 16px; box-shadow: 0 4px 6px rgba(139,92,246,0.15); transition: all 0.3s;"
+             onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(139,92,246,0.25)'"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(139,92,246,0.15)'">
+            <div style="color: #5b21b6; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.75rem; letter-spacing: 0.5px; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.5rem;">📋</span> TOTAL TRANSACTIONS
+            </div>
+            <div style="font-size: 2.5rem; font-weight: 800; color: #7c3aed; margin-bottom: 0.5rem;">{{ total_count|default:0 }}</div>
+            <div style="font-size: 0.875rem; color: #6d28d9; font-weight: 500;">Expense records</div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 1.75rem; border-radius: 16px; box-shadow: 0 4px 6px rgba(37,99,235,0.15); transition: all 0.3s;"
+             onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(37,99,235,0.25)'"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(37,99,235,0.15)'">
+            <div style="color: #1e40af; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.75rem; letter-spacing: 0.5px; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.5rem;">🏆</span> TOP CATEGORY
+            </div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: #1d4ed8; margin-bottom: 0.5rem;">{{ top_category|title|default:"N/A" }}</div>
+            <div style="font-size: 0.875rem; color: #1e40af; font-weight: 500;">Highest spending</div>
+        </div>
+    </div>
+
+    <!-- Expenses by Category -->
+    <div style="background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 2rem; border: 1px solid #f3f4f6;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; color: #1f2937;">Expenses by Category</h2>
+
+        {% if category_breakdown %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border-bottom: 2px solid #e5e7eb;">
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Category</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Total Amount</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">% of Total</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Count</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Average</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in category_breakdown %}
+                    <tr style="border-bottom: 1px solid #f3f4f6; transition: background 0.2s;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='white'">
+                        <td style="padding: 1rem;">
+                            <span style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); color: #991b1b; padding: 0.5rem 1.25rem; border-radius: 10px; font-weight: 700; font-size: 0.875rem; letter-spacing: 0.3px;">
+                                {{ item.category_display }}
+                            </span>
+                        </td>
+                        <td style="padding: 1rem; font-weight: 700; color: #dc2626; font-size: 1.25rem;">KES {{ item.total|floatformat:0 }}</td>
+                        <td style="padding: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="flex: 1; height: 10px; background: #f3f4f6; border-radius: 9999px; overflow: hidden;">
+                                    <div style="height: 100%; background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%); width: {{ item.percentage }}%; transition: width 0.3s;"></div>
+                                </div>
+                                <span style="font-weight: 700; color: #1f2937; min-width: 3rem;">{{ item.percentage|floatformat:1 }}%</span>
+                            </div>
+                        </td>
+                        <td style="padding: 1rem; color: #6b7280; font-weight: 600;">{{ item.count }}</td>
+                        <td style="padding: 1rem; font-weight: 600; color: #374151;">KES {{ item.average|floatformat:0 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); font-weight: 700;">
+                        <td style="padding: 1rem; font-size: 1rem; color: #1f2937;">TOTAL</td>
+                        <td style="padding: 1rem; color: #dc2626; font-size: 1.375rem;">KES {{ total_expenses|floatformat:0|default:0 }}</td>
+                        <td style="padding: 1rem; color: #6b7280;">100%</td>
+                        <td style="padding: 1rem; color: #6b7280;">{{ total_count|default:0 }}</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% else %}
+        <p style="text-align: center; color: #6b7280; padding: 3rem;">No expenses recorded for the selected period</p>
+        {% endif %}
+    </div>
+
+    <!-- Monthly Breakdown -->
+    <div style="background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 2rem; border: 1px solid #f3f4f6;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; color: #1f2937;">Monthly Expenses Breakdown</h2>
+
+        {% if monthly_breakdown %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border-bottom: 2px solid #e5e7eb;">
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Month</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Total Expenses</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Transactions</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Average per Day</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Top Category</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for month in monthly_breakdown %}
+                    <tr style="border-bottom: 1px solid #f3f4f6; transition: background 0.2s;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
+                        <td style="padding: 1rem; font-weight: 600; color: #1f2937;">{{ month.month|date:"F Y" }}</td>
+                        <td style="padding: 1rem; font-weight: 700; color: #dc2626; font-size: 1.125rem;">KES {{ month.total|floatformat:0 }}</td>
+                        <td style="padding: 1rem; color: #6b7280; font-weight: 500;">{{ month.count }}</td>
+                        <td style="padding: 1rem; font-weight: 600; color: #374151;">KES {{ month.daily_average|floatformat:0 }}</td>
+                        <td style="padding: 1rem;">
+                            <span style="background: #f3f4f6; color: #1f2937; padding: 0.375rem 0.875rem; border-radius: 12px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.3px;">
+                                {{ month.top_category|title }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p style="text-align: center; color: #6b7280; padding: 3rem;">No monthly data available</p>
+        {% endif %}
+    </div>
+
+    <!-- Expenses by Property -->
+    <div style="background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 2rem; border: 1px solid #f3f4f6;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; color: #1f2937;">Expenses by Property</h2>
+
+        {% if property_expenses %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border-bottom: 2px solid #e5e7eb;">
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Property</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Total Expenses</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">% of Total</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Per Unit</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Top Category</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in property_expenses %}
+                    <tr style="border-bottom: 1px solid #f3f4f6; transition: background 0.2s;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
+                        <td style="padding: 1rem; font-weight: 600; color: #1f2937;">{{ item.property_name }}</td>
+                        <td style="padding: 1rem; font-weight: 700; color: #dc2626; font-size: 1.125rem;">KES {{ item.total|floatformat:0 }}</td>
+                        <td style="padding: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="flex: 1; height: 10px; background: #f3f4f6; border-radius: 9999px; overflow: hidden;">
+                                    <div style="height: 100%; background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%); width: {{ item.percentage }}%;"></div>
+                                </div>
+                                <span style="font-weight: 700; min-width: 3rem;">{{ item.percentage|floatformat:1 }}%</span>
+                            </div>
+                        </td>
+                        <td style="padding: 1rem; font-weight: 600; color: #374151;">KES {{ item.per_unit|floatformat:0 }}</td>
+                        <td style="padding: 1rem; color: #6b7280;">{{ item.top_category|title }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p style="text-align: center; color: #6b7280; padding: 3rem;">No property expense data available</p>
+        {% endif %}
+    </div>
+
+    <!-- Top Vendors -->
+    {% if top_vendors %}
+    <div style="background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid #f3f4f6;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; color: #1f2937;">Top Vendors/Suppliers</h2>
+
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border-bottom: 2px solid #e5e7eb;">
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Vendor</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Contact</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Total Paid</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Transactions</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Average</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Last Payment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vendor in top_vendors %}
+                    <tr style="border-bottom: 1px solid #f3f4f6; transition: background 0.2s;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
+                        <td style="padding: 1rem; font-weight: 600; color: #1f2937;">{{ vendor.name }}</td>
+                        <td style="padding: 1rem; color: #6b7280;">{{ vendor.contact|default:"-" }}</td>
+                        <td style="padding: 1rem; font-weight: 700; color: #dc2626; font-size: 1.125rem;">KES {{ vendor.total|floatformat:0 }}</td>
+                        <td style="padding: 1rem; color: #6b7280; font-weight: 500;">{{ vendor.count }}</td>
+                        <td style="padding: 1rem; font-weight: 600; color: #374151;">KES {{ vendor.average|floatformat:0 }}</td>
+                        <td style="padding: 1rem; color: #6b7280;">{{ vendor.last_payment|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<style>
+@media print {
+    nav, button, a[href*="reports:dashboard"] {
+        display: none !important;
+    }
+}
+</style>
+{% endblock %}

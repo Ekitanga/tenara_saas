@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ lease.tenant.user.get_full_name }} - TENARA{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem; max-width: 1200px; margin: 0 auto;">
+    
+    <!-- Header -->
+    <div style="margin-bottom: 2rem;">
+        <a href="{% url 'tenants:list' %}" style="color: #6b7280; text-decoration: none; margin-bottom: 0.5rem; display: inline-block;">
+            ← Back to Tenants
+        </a>
+        <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">{{ lease.tenant.user.get_full_name }}</h1>
+                <p style="color: #6b7280; font-size: 1.125rem;">
+                    {{ lease.unit.unit_property.name }} - Unit {{ lease.unit.unit_number }}
+                </p>
+            </div>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <a href="{% url 'tenants:update' lease.pk %}" style="padding: 0.75rem 1.5rem; border: 2px solid #e5e7eb; border-radius: 8px; text-decoration: none; color: #1f2937; font-weight: 600;">
+                    Edit Info
+                </a>
+                {% if lease.status == 'active' %}
+                <button onclick="document.getElementById('terminateModal').style.display='block'" style="padding: 0.75rem 1.5rem; background: #ef4444; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                    Terminate Lease
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Lease Info Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">MONTHLY RENT</div>
+            <div style="font-size: 2rem; font-weight: 800; color: #2563eb;">KES {{ lease.rent_amount|floatformat:0 }}</div>
+        </div>
+        
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">TOTAL PAID</div>
+            <div style="font-size: 2rem; font-weight: 800; color: #10b981;">KES {{ total_paid|floatformat:0 }}</div>
+        </div>
+        
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">ARREARS</div>
+            <div style="font-size: 2rem; font-weight: 800; color: {% if total_arrears > 0 %}#ef4444{% else %}#6b7280{% endif %};">
+                KES {{ total_arrears|floatformat:0 }}
+            </div>
+        </div>
+        
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">DEPOSIT</div>
+            <div style="font-size: 1.25rem; font-weight: 800;">
+                KES {{ lease.deposit_amount|floatformat:0 }}
+                {% if lease.deposit_paid %}
+                <span style="display: block; font-size: 0.75rem; color: #10b981; margin-top: 0.25rem;">✓ Paid</span>
+                {% else %}
+                <span style="display: block; font-size: 0.75rem; color: #ef4444; margin-top: 0.25rem;">✗ Pending</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contact & Lease Details -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+        
+        <!-- Contact Information -->
+        <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Contact Information</h2>
+            
+            <div style="margin-bottom: 1rem;">
+                <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Email</div>
+                <div>{{ lease.tenant.user.email|default:"-" }}</div>
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+                <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Phone Number</div>
+                <div>{{ lease.tenant.user.phone_number }}</div>
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+                <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">National ID</div>
+                <div>{{ lease.tenant.national_id|default:"-" }}</div>
+            </div>
+            
+            {% if lease.tenant.emergency_contact %}
+            <div style="margin-bottom: 1rem;">
+                <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Emergency Contact</div>
+                <div>{{ lease.tenant.emergency_contact_name|default:"Emergency Contact" }}</div>
+                <div style="font-size: 0.875rem; color: #6b7280;">{{ lease.tenant.emergency_contact }}</div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Lease Details -->
+        <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Lease Details</h2>
+            
+            <div style="margin-bottom: 1rem;">
+                <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Status</div>
+                <div>
+                    {% if lease.status == 'active' %}
+                    <span style="background: #d1fae5; color: #065f46; padding: 0.5rem 1rem; border-radius: 9999px; font-weight: 600;">Active</span>
+                    {% else %}
+                    <span style="background: #f3f4f6; color: #6b7280; padding: 0.5rem 1rem; border-radius: 9999px; font-weight: 600;">{{ lease.get_status_display }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+                <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Start Date</div>
+                <div>{{ lease.start_date|date:"F d, Y" }}</div>
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+                <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Move In Date</div>
+                <div>{{ lease.move_in_date|date:"F d, Y"|default:"-" }}</div>
+            </div>
+            
+            {% if lease.end_date %}
+            <div style="margin-bottom: 1rem;">
+                <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">End Date</div>
+                <div>{{ lease.end_date|date:"F d, Y" }}</div>
+            </div>
+            {% endif %}
+            
+            {% if lease.move_out_date %}
+            <div style="margin-bottom: 1rem;">
+                <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Move Out Date</div>
+                <div>{{ lease.move_out_date|date:"F d, Y" }}</div>
+            </div>
+            {% endif %}
+            
+            {% if lease.notes %}
+            <div>
+                <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;">Notes</div>
+                <div style="font-size: 0.875rem;">{{ lease.notes }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Invoices -->
+    <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="font-size: 1.5rem; font-weight: 700;">Invoices & Payments</h2>
+            <a href="{% url 'invoicing:create' %}?lease={{ lease.pk }}" style="color: #2563eb; text-decoration: none; font-weight: 600;">+ Create Invoice</a>
+        </div>
+        
+        {% if invoices %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Invoice #</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Period</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Amount</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Paid</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Balance</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Status</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for invoice in invoices %}
+                    <tr style="border-bottom: 1px solid #f3f4f6;">
+                        <td style="padding: 1rem; font-weight: 600;">{{ invoice.invoice_number }}</td>
+                        <td style="padding: 1rem;">{{ invoice.billing_month|date:"M Y" }}</td>
+                        <td style="padding: 1rem; font-weight: 600;">KES {{ invoice.total_amount|floatformat:0 }}</td>
+                        <td style="padding: 1rem; color: #10b981; font-weight: 600;">KES {{ invoice.amount_paid|floatformat:0 }}</td>
+                        <td style="padding: 1rem; font-weight: 600; color: {% if invoice.balance > 0 %}#ef4444{% else %}#6b7280{% endif %};">
+                            KES {{ invoice.balance|floatformat:0 }}
+                        </td>
+                        <td style="padding: 1rem;">
+                            {% if invoice.status == 'paid' %}
+                            <span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">Paid</span>
+                            {% elif invoice.status == 'overdue' %}
+                            <span style="background: #fee2e2; color: #991b1b; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">Overdue</span>
+                            {% elif invoice.status == 'partial' %}
+                            <span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">Partial</span>
+                            {% else %}
+                            <span style="background: #dbeafe; color: #1e40af; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 1rem;">
+                            <a href="{% url 'invoicing:detail' invoice.pk %}" style="color: #2563eb; text-decoration: none; margin-right: 0.5rem;">View</a>
+                            {% if invoice.balance > 0 %}
+                            <a href="{% url 'payments:record_manual' %}?invoice={{ invoice.pk }}" style="color: #10b981; text-decoration: none;">Pay</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p style="text-align: center; color: #6b7280; padding: 2rem;">No invoices yet</p>
+        {% endif %}
+    </div>
+    
+</div>
+
+<!-- Terminate Lease Modal -->
+<div id="terminateModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 500px; width: 90%;">
+        <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;">Terminate Lease</h3>
+        <p style="color: #6b7280; margin-bottom: 1.5rem;">Are you sure you want to terminate this lease? This action will mark the unit as vacant.</p>
+        
+        <form method="post" action="{% url 'tenants:lease_terminate' lease.pk %}">
+            {% csrf_token %}
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Termination Date</label>
+                <input type="date" name="termination_date" value="{{ today|date:'Y-m-d' }}" required style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 8px;">
+            </div>
+            
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" style="flex: 1; padding: 0.75rem; background: #ef4444; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                    Terminate Lease
+                </button>
+                <button type="button" onclick="document.getElementById('terminateModal').style.display='none'" style="flex: 1; padding: 0.75rem; background: white; color: #1f2937; border: 2px solid #e5e7eb; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Make modal flex when displayed
+document.getElementById('terminateModal').onclick = function(e) {
+    if (e.target === this) {
+        this.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

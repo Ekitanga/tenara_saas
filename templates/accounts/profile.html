@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile Settings - TENARA{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem; max-width: 1200px; margin: 0 auto;">
+    <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 2rem;">Profile Settings</h1>
+    
+    <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Account Information</h2>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            {% if user.is_landlord %}
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Business Name</label>
+                <input type="text" name="business_name" value="{{ landlord_profile.business_name }}" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 8px;">
+            </div>
+            
+            <h3 style="font-size: 1.25rem; font-weight: 700; margin: 2rem 0 1rem;">API Configuration (Optional)</h3>
+            
+            <details style="margin-bottom: 1rem;">
+                <summary style="cursor: pointer; font-weight: 600; padding: 0.5rem; background: #f9fafb; border-radius: 8px;">M-Pesa Configuration</summary>
+                <div style="padding: 1rem; margin-top: 0.5rem;">
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Consumer Key</label>
+                        <input type="text" name="mpesa_consumer_key" value="{{ landlord_profile.mpesa_consumer_key }}" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 8px;">
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Consumer Secret</label>
+                        <input type="text" name="mpesa_consumer_secret" value="{{ landlord_profile.mpesa_consumer_secret }}" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 8px;">
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Shortcode</label>
+                        <input type="text" name="mpesa_shortcode" value="{{ landlord_profile.mpesa_shortcode }}" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 8px;">
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Passkey</label>
+                        <input type="text" name="mpesa_passkey" value="{{ landlord_profile.mpesa_passkey }}" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 8px;">
+                    </div>
+                </div>
+            </details>
+            
+            <details style="margin-bottom: 1rem;">
+                <summary style="cursor: pointer; font-weight: 600; padding: 0.5rem; background: #f9fafb; border-radius: 8px;">SMS Configuration (Bonga SMS)</summary>
+                <div style="padding: 1rem; margin-top: 0.5rem;">
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">API Key</label>
+                        <input type="text" name="bonga_api_key" value="{{ landlord_profile.bonga_api_key }}" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 8px;">
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Sender ID</label>
+                        <input type="text" name="bonga_sender_id" value="{{ landlord_profile.bonga_sender_id }}" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 8px;">
+                    </div>
+                </div>
+            </details>
+            {% endif %}
+            
+            <button type="submit" class="btn btn-primary" style="margin-top: 1.5rem; background: #2563eb; color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                Save Changes
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

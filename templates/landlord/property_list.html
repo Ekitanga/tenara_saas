@@ -1,0 +1,495 @@
+{% extends 'base.html' %}
+
+{% block title %}Properties - TENARA{% endblock %}
+
+{% block content %}
+<style>
+    /* Premium Property List Styles */
+    .property-container {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* Page Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #111827;
+        margin: 0 0 0.25rem 0;
+        letter-spacing: -0.025em;
+    }
+
+    .page-subtitle {
+        color: #6b7280;
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .btn-primary-gradient {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        color: white;
+        padding: 0.75rem 1.25rem;
+        text-decoration: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary-gradient:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+        background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+        color: white;
+        text-decoration: none;
+    }
+
+    /* Summary Stats */
+    .summary-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .summary-card {
+        background: white;
+        padding: 1.25rem;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.2s ease;
+    }
+
+    .summary-card:hover {
+        border-color: #d1d5db;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .summary-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .summary-icon.purple { background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%); }
+    .summary-icon.green { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); }
+    .summary-icon.blue { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); }
+    .summary-icon.amber { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); }
+
+    .summary-content {
+        flex: 1;
+    }
+
+    .summary-value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #111827;
+    }
+
+    .summary-label {
+        font-size: 0.8125rem;
+        color: #6b7280;
+        font-weight: 500;
+    }
+
+    /* Property Grid */
+    .property-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 1.5rem;
+    }
+
+    /* Property Card */
+    .property-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .property-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+        border-color: #d1d5db;
+    }
+
+    .property-header {
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .property-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+    }
+
+    .property-icon {
+        width: 56px;
+        height: 56px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        margin-bottom: 1rem;
+        backdrop-filter: blur(10px);
+    }
+
+    .property-name {
+        font-size: 1.375rem;
+        font-weight: 700;
+        color: white;
+        margin: 0 0 0.375rem 0;
+    }
+
+    .property-location {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 0.9375rem;
+    }
+
+    .property-body {
+        padding: 1.5rem;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .stat-box {
+        text-align: center;
+        padding: 1rem;
+        background: #f9fafb;
+        border-radius: 10px;
+        border: 1px solid #f3f4f6;
+        transition: all 0.2s ease;
+    }
+
+    .stat-box:hover {
+        background: #f3f4f6;
+    }
+
+    .stat-number {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #111827;
+        line-height: 1;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-number.occupied {
+        color: #059669;
+    }
+
+    .stat-text {
+        font-size: 0.8125rem;
+        color: #6b7280;
+        font-weight: 500;
+    }
+
+    /* Occupancy Bar */
+    .occupancy-section {
+        margin-bottom: 1.25rem;
+    }
+
+    .occupancy-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .occupancy-label {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .occupancy-percent {
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: #059669;
+    }
+
+    .occupancy-bar {
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .occupancy-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+        border-radius: 4px;
+        transition: width 0.5s ease;
+    }
+
+    /* View Button */
+    .view-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        width: 100%;
+        padding: 0.875rem;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        color: #374151;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .view-btn:hover {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        color: white;
+        border-color: transparent;
+        text-decoration: none;
+    }
+
+    /* Empty State */
+    .empty-state {
+        background: white;
+        padding: 4rem 2rem;
+        border-radius: 20px;
+        text-align: center;
+        border: 2px dashed #e5e7eb;
+    }
+
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    .empty-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-text {
+        color: #6b7280;
+        margin-bottom: 2rem;
+        font-size: 1.0625rem;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .property-container {
+            padding: 1rem;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .btn-primary-gradient {
+            justify-content: center;
+        }
+
+        .property-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .summary-row {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .summary-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="property-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">My Properties</h1>
+            <p class="page-subtitle">Manage your rental properties and units</p>
+        </div>
+        <a href="{% url 'property_create' %}" class="btn-primary-gradient">
+            <span>+</span> Add Property
+        </a>
+    </div>
+
+    {% if properties %}
+    <!-- Summary Stats -->
+    <div class="summary-row">
+        <div class="summary-card">
+            <div class="summary-icon purple">🏢</div>
+            <div class="summary-content">
+                <div class="summary-value">{{ properties|length }}</div>
+                <div class="summary-label">Total Properties</div>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-icon blue">🚪</div>
+            <div class="summary-content">
+                <div class="summary-value" id="totalUnits">-</div>
+                <div class="summary-label">Total Units</div>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-icon green">✅</div>
+            <div class="summary-content">
+                <div class="summary-value" id="occupiedUnits">-</div>
+                <div class="summary-label">Occupied</div>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-icon amber">📭</div>
+            <div class="summary-content">
+                <div class="summary-value" id="vacantUnits">-</div>
+                <div class="summary-label">Vacant</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Property Grid -->
+    <div class="property-grid">
+        {% for property in properties %}
+        <div class="property-card" data-total="{{ property.get_total_units }}" data-occupied="{{ property.get_occupied_units }}">
+            <div class="property-header">
+                <div class="property-icon">🏢</div>
+                <h3 class="property-name">{{ property.name }}</h3>
+                <div class="property-location">
+                    <span>📍</span> {{ property.location }}
+                </div>
+            </div>
+            <div class="property-body">
+                <!-- Stats -->
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-number">{{ property.get_total_units }}</div>
+                        <div class="stat-text">Total Units</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number occupied">{{ property.get_occupied_units }}</div>
+                        <div class="stat-text">Occupied</div>
+                    </div>
+                </div>
+
+                <!-- Occupancy Bar -->
+                <div class="occupancy-section">
+                    <div class="occupancy-header">
+                        <span class="occupancy-label">Occupancy Rate</span>
+                        {% with total=property.get_total_units occupied=property.get_occupied_units %}
+                        <span class="occupancy-percent">
+                            {% if total > 0 %}
+                            {{ occupied|floatformat:0 }}/{{ total }} ({% widthratio occupied total 100 %}%)
+                            {% else %}
+                            0%
+                            {% endif %}
+                        </span>
+                        {% endwith %}
+                    </div>
+                    <div class="occupancy-bar">
+                        {% with total=property.get_total_units occupied=property.get_occupied_units %}
+                        <div class="occupancy-fill" style="width: {% if total > 0 %}{% widthratio occupied total 100 %}%{% else %}0%{% endif %};"></div>
+                        {% endwith %}
+                    </div>
+                </div>
+
+                <!-- View Button -->
+                <a href="{% url 'property_detail' property.pk %}" class="view-btn">
+                    View Details <span>→</span>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <div class="empty-icon">🏢</div>
+        <h2 class="empty-title">No Properties Yet</h2>
+        <p class="empty-text">Get started by adding your first rental property. You can add units and manage tenants after creating a property.</p>
+        <a href="{% url 'property_create' %}" class="btn-primary-gradient">
+            <span>+</span> Add Your First Property
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Calculate totals from property cards
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.property-card');
+    let totalUnits = 0;
+    let occupiedUnits = 0;
+
+    cards.forEach(card => {
+        totalUnits += parseInt(card.dataset.total) || 0;
+        occupiedUnits += parseInt(card.dataset.occupied) || 0;
+    });
+
+    const totalEl = document.getElementById('totalUnits');
+    const occupiedEl = document.getElementById('occupiedUnits');
+    const vacantEl = document.getElementById('vacantUnits');
+
+    if (totalEl) totalEl.textContent = totalUnits;
+    if (occupiedEl) occupiedEl.textContent = occupiedUnits;
+    if (vacantEl) vacantEl.textContent = totalUnits - occupiedUnits;
+});
+</script>
+{% endblock %}

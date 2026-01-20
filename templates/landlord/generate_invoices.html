@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Generate Monthly Invoices - TENARA{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem; max-width: 900px; margin: 0 auto;">
+    
+    <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 2rem;">Generate Monthly Invoices</h1>
+    
+    <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        
+        <!-- Info Banner -->
+        <div style="background: #dbeafe; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #2563eb; margin-bottom: 2rem;">
+            <div style="font-weight: 600; color: #1e40af; margin-bottom: 0.5rem;">💡 Bulk Invoice Generation</div>
+            <p style="color: #1e3a8a; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                This will automatically create invoices for all active tenants for the selected month.
+            </p>
+            <ul style="color: #1e3a8a; font-size: 0.875rem; margin: 0; padding-left: 1.25rem;">
+                <li>Rent amount will be taken from the lease agreement</li>
+                <li>Water charges will be calculated based on unit settings (fixed/metered/included)</li>
+                <li>Garbage fees will be automatically included</li>
+                <li>Due date will be set to the 15th of the month</li>
+                <li>Invoices already existing for the month will be skipped</li>
+            </ul>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Billing Month *</label>
+                <input type="month" name="billing_month" required 
+                       value="{{ next_month|date:'Y-m' }}" 
+                       style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 1rem;">
+                <p style="font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem;">
+                    Select the month for which to generate invoices
+                </p>
+            </div>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Due Date</label>
+                <input type="date" name="due_date" 
+                       value="{{ suggested_due_date|date:'Y-m-d' }}" 
+                       style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 1rem;">
+                <p style="font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem;">
+                    Default: 15th of the billing month
+                </p>
+            </div>
+            
+            <!-- Preview Section -->
+            <div style="background: #f9fafb; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+                <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">Preview</h3>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <div style="color: #6b7280; font-size: 0.875rem; margin-bottom: 0.25rem;">Active Tenants</div>
+                        <div style="font-size: 1.5rem; font-weight: 800; color: #2563eb;">{{ active_tenants_count|default:0 }}</div>
+                    </div>
+                    
+                    <div>
+                        <div style="color: #6b7280; font-size: 0.875rem; margin-bottom: 0.25rem;">Invoices to Generate</div>
+                        <div style="font-size: 1.5rem; font-weight: 800; color: #10b981;">{{ active_tenants_count|default:0 }}</div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div style="color: #6b7280; font-size: 0.875rem; margin-bottom: 0.25rem;">Estimated Total</div>
+                    <div style="font-size: 2rem; font-weight: 800; color: #1f2937;">KES {{ estimated_total|floatformat:0|default:0 }}</div>
+                </div>
+            </div>
+            
+            <!-- Warning -->
+            <div style="background: #fef3c7; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #f59e0b; margin-bottom: 2rem;">
+                <div style="font-weight: 600; color: #92400e; margin-bottom: 0.5rem;">⚠️ Important</div>
+                <p style="color: #78350f; font-size: 0.875rem; margin: 0;">
+                    Please review the billing month carefully. This action will create multiple invoices at once. 
+                    Invoices that already exist for the selected month will be automatically skipped.
+                </p>
+            </div>
+            
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" style="flex: 1; padding: 1rem; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer;">
+                    Generate Invoices
+                </button>
+                <a href="{% url 'invoicing:list' %}" style="flex: 1; padding: 1rem; border: 2px solid #e5e7eb; border-radius: 8px; text-decoration: none; color: #1f2937; font-weight: 600; text-align: center; display: flex; align-items: center; justify-content: center;">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Recent Generation History -->
+    {% if recent_generations %}
+    <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 2rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Recent Bulk Generations</h2>
+        
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Date Generated</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Billing Month</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Invoices Created</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Total Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for gen in recent_generations %}
+                    <tr style="border-bottom: 1px solid #f3f4f6;">
+                        <td style="padding: 1rem;">{{ gen.created_at|date:"M d, Y H:i" }}</td>
+                        <td style="padding: 1rem; font-weight: 600;">{{ gen.billing_month|date:"F Y" }}</td>
+                        <td style="padding: 1rem; color: #2563eb; font-weight: 600;">{{ gen.count }}</td>
+                        <td style="padding: 1rem; font-weight: 700;">KES {{ gen.total|floatformat:0 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+    
+</div>
+{% endblock %}

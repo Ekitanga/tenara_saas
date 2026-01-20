@@ -1,0 +1,487 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if invoice %}Edit Invoice{% else %}Create Invoice{% endif %} - TENARA{% endblock %}
+
+{% block content %}
+<style>
+    /* Premium Invoice Form Styles */
+    .form-container {
+        padding: 2rem;
+        max-width: 800px;
+        margin: 0 auto;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6b7280;
+        text-decoration: none;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .back-link:hover {
+        color: #2563eb;
+    }
+
+    .form-header {
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .form-icon {
+        width: 72px;
+        height: 72px;
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin: 0 auto 1rem;
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+    }
+
+    .form-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #111827;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .form-subtitle {
+        color: #6b7280;
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-section {
+        padding: 1.75rem 2rem;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .form-section:last-of-type {
+        border-bottom: none;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .section-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    .section-icon.blue { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); }
+    .section-icon.green { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); }
+    .section-icon.amber { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); }
+
+    .section-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 0;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+    }
+
+    @media (max-width: 640px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        color: #374151;
+    }
+
+    .form-label .required {
+        color: #ef4444;
+        margin-left: 0.25rem;
+    }
+
+    .input-wrapper {
+        position: relative;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1rem;
+        opacity: 0.5;
+    }
+
+    .form-input,
+    .form-select {
+        width: 100%;
+        padding: 0.875rem 1rem 0.875rem 2.75rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 1rem;
+        color: #111827;
+        background: #fafafa;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    .form-input.no-icon {
+        padding-left: 1rem;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: #2563eb;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+
+    .form-textarea {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 1rem;
+        color: #111827;
+        background: #fafafa;
+        transition: all 0.2s ease;
+        resize: vertical;
+        min-height: 100px;
+        font-family: inherit;
+        box-sizing: border-box;
+    }
+
+    .form-textarea:focus {
+        outline: none;
+        border-color: #2563eb;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+
+    /* Bill Item Cards */
+    .bill-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: #f9fafb;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        margin-bottom: 0.75rem;
+    }
+
+    .bill-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .bill-item-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .bill-item-icon.rent { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); }
+    .bill-item-icon.water { background: linear-gradient(135deg, #cffafe 0%, #a5f3fc 100%); }
+    .bill-item-icon.garbage { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); }
+    .bill-item-icon.other { background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); }
+
+    .bill-item-content {
+        flex: 1;
+    }
+
+    .bill-item-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.25rem;
+        font-size: 0.9375rem;
+    }
+
+    .bill-item-input {
+        width: 100%;
+        padding: 0.625rem 0.875rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 1rem;
+        background: white;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    .bill-item-input:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .form-actions {
+        padding: 1.75rem 2rem;
+        background: linear-gradient(to top, #f9fafb, white);
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn-submit {
+        flex: 1;
+        padding: 1rem 1.5rem;
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+    }
+
+    .btn-cancel {
+        flex: 0.6;
+        padding: 1rem 1.5rem;
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        color: #374151;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .btn-cancel:hover {
+        background: #f9fafb;
+        border-color: #d1d5db;
+        text-decoration: none;
+    }
+
+    @media (max-width: 640px) {
+        .form-container {
+            padding: 1rem;
+        }
+
+        .form-section {
+            padding: 1.25rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+            padding: 1.25rem;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            order: 2;
+        }
+
+        .bill-item {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .bill-item-icon {
+            align-self: flex-start;
+        }
+    }
+</style>
+
+<div class="form-container">
+    <a href="{% url 'invoicing:list' %}" class="back-link">
+        <span>←</span> Back to Invoices
+    </a>
+
+    <div class="form-header">
+        <div class="form-icon">{% if invoice %}✏️{% else %}🧾{% endif %}</div>
+        <h1 class="form-title">{% if invoice %}Edit Invoice{% else %}Create New Invoice{% endif %}</h1>
+        <p class="form-subtitle">{% if invoice %}Update invoice details{% else %}Generate a rent invoice for a tenant{% endif %}</p>
+    </div>
+
+    <div class="form-card">
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Tenant Selection -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon blue">👤</div>
+                    <h2 class="section-title">Select Tenant</h2>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Lease / Tenant <span class="required">*</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">👤</span>
+                        <select name="lease" required class="form-select">
+                            <option value="">Choose tenant</option>
+                            {% for lease in active_leases %}
+                            <option value="{{ lease.pk }}" {% if invoice and invoice.lease.pk == lease.pk %}selected{% endif %}>
+                                {{ lease.tenant.user.get_full_name }} — {{ lease.unit.unit_property.name }} Unit {{ lease.unit.unit_number }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Billing Period -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon green">📅</div>
+                    <h2 class="section-title">Billing Period</h2>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">
+                            Billing Month <span class="required">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">📆</span>
+                            <input type="month" name="billing_month" required
+                                   value="{% if invoice %}{{ invoice.billing_month|date:'Y-m' }}{% endif %}"
+                                   class="form-input">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Due Date <span class="required">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">⏰</span>
+                            <input type="date" name="due_date" required
+                                   value="{% if invoice %}{{ invoice.due_date|date:'Y-m-d' }}{% endif %}"
+                                   class="form-input">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bill Breakdown -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon amber">💰</div>
+                    <h2 class="section-title">Bill Breakdown</h2>
+                </div>
+
+                <div class="bill-item">
+                    <div class="bill-item-icon rent">🏠</div>
+                    <div class="bill-item-content">
+                        <div class="bill-item-label">Rent Amount <span style="color: #ef4444;">*</span></div>
+                        <input type="number" name="rent_amount" step="0.01" required
+                               value="{% if invoice %}{{ invoice.rent_amount }}{% endif %}"
+                               placeholder="e.g., 15000"
+                               class="bill-item-input">
+                    </div>
+                </div>
+
+                <div class="bill-item">
+                    <div class="bill-item-icon water">💧</div>
+                    <div class="bill-item-content">
+                        <div class="bill-item-label">Water Amount</div>
+                        <input type="number" name="water_amount" step="0.01"
+                               value="{% if invoice %}{{ invoice.water_amount }}{% else %}0{% endif %}"
+                               placeholder="e.g., 500"
+                               class="bill-item-input">
+                    </div>
+                </div>
+
+                <div class="bill-item">
+                    <div class="bill-item-icon garbage">🗑️</div>
+                    <div class="bill-item-content">
+                        <div class="bill-item-label">Garbage Fee</div>
+                        <input type="number" name="garbage_amount" step="0.01"
+                               value="{% if invoice %}{{ invoice.garbage_amount }}{% else %}0{% endif %}"
+                               placeholder="e.g., 200"
+                               class="bill-item-input">
+                    </div>
+                </div>
+
+                <div class="bill-item">
+                    <div class="bill-item-icon other">📦</div>
+                    <div class="bill-item-content">
+                        <div class="bill-item-label">Other Charges</div>
+                        <input type="number" name="other_charges" step="0.01"
+                               value="{% if invoice %}{{ invoice.other_charges }}{% else %}0{% endif %}"
+                               placeholder="e.g., 0"
+                               class="bill-item-input">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="form-section">
+                <div class="form-group">
+                    <label class="form-label">Notes <span style="color: #9ca3af; font-weight: normal;">(Optional)</span></label>
+                    <textarea name="notes" class="form-textarea" placeholder="Any additional notes for this invoice...">{% if invoice %}{{ invoice.notes }}{% endif %}</textarea>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">
+                    <span>{% if invoice %}💾{% else %}✓{% endif %}</span>
+                    {% if invoice %}Update Invoice{% else %}Create Invoice{% endif %}
+                </button>
+                <a href="{% url 'invoicing:list' %}" class="btn-cancel">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

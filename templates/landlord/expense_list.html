@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+
+{% block title %}Expenses - TENARA{% endblock %}
+
+{% block content %}
+<style>
+    /* Mobile Optimization - Expenses */
+    @media (max-width: 768px) {
+        div[style*="padding: 2rem"] {
+            padding: 1rem !important;
+        }
+
+        h1[style*="font-size: 2.5rem"] {
+            font-size: 1.75rem !important;
+        }
+
+        /* Filter form stack */
+        form[style*="display: grid"] {
+            grid-template-columns: 1fr !important;
+        }
+
+        /* Stats grid 1 column */
+        div[style*="grid-template-columns: repeat(4, 1fr)"],
+        div[style*="grid-template-columns: repeat(auto-fit"] {
+            grid-template-columns: 1fr !important;
+        }
+
+        /* Table to cards */
+        table {
+            display: block;
+        }
+
+        table thead {
+            display: none;
+        }
+
+        table tbody {
+            display: block;
+        }
+
+        table tr {
+            display: block;
+            margin-bottom: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1rem;
+            background: white;
+        }
+
+        table td {
+            display: block;
+            padding: 0.5rem 0;
+            border: none;
+            text-align: left !important;
+        }
+
+        table td::before {
+            content: attr(data-label);
+            display: block;
+            font-weight: 700;
+            color: #6b7280;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+    }
+</style>
+
+<div style="padding: 2rem; max-width: 1400px; margin: 0 auto;">
+
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 style="font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Expenses</h1>
+            <p style="color: #6b7280; font-size: 1.125rem;">Track property costs and calculate net profit</p>
+        </div>
+        <a href="{% url 'expenses:create' %}" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 0.875rem 1.75rem; text-decoration: none; border-radius: 10px; font-weight: 600; box-shadow: 0 4px 12px rgba(239,68,68,0.3); transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem;"
+           onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(239,68,68,0.4)'"
+           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(239,68,68,0.3)'">
+            <span style="font-size: 1.25rem;">+</span> Add Expense
+        </a>
+    </div>
+
+    <!-- Filter Section - Enhanced -->
+    <div style="background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%); padding: 1.75rem; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 2rem; border: 1px solid #e5e7eb;">
+        <form method="get" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; align-items: end;">
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.875rem; color: #374151; display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 1rem;">📂</span> Category
+                </label>
+                <select name="category" style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.875rem; transition: all 0.2s;"
+                        onfocus="this.style.borderColor='#ef4444'; this.style.boxShadow='0 0 0 3px rgba(239,68,68,0.1)'"
+                        onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'">
+                    <option value="all">All Categories</option>
+                    <option value="repairs" {% if category_filter == 'repairs' %}selected{% endif %}>🔧 Repairs</option>
+                    <option value="electricity" {% if category_filter == 'electricity' %}selected{% endif %}>⚡ Electricity</option>
+                    <option value="water" {% if category_filter == 'water' %}selected{% endif %}>💧 Water</option>
+                    <option value="maintenance" {% if category_filter == 'maintenance' %}selected{% endif %}>🛠️ Maintenance</option>
+                    <option value="insurance" {% if category_filter == 'insurance' %}selected{% endif %}>🛡️ Insurance</option>
+                    <option value="taxes" {% if category_filter == 'taxes' %}selected{% endif %}>🏛️ Property Taxes</option>
+                    <option value="salaries" {% if category_filter == 'salaries' %}selected{% endif %}>👔 Salaries/Wages</option>
+                    <option value="security" {% if category_filter == 'security' %}selected{% endif %}>🔒 Security Services</option>
+                    <option value="cleaning" {% if category_filter == 'cleaning' %}selected{% endif %}>🧹 Cleaning Services</option>
+                    <option value="legal" {% if category_filter == 'legal' %}selected{% endif %}>⚖️ Legal Fees</option>
+                    <option value="marketing" {% if category_filter == 'marketing' %}selected{% endif %}>📢 Marketing</option>
+                    <option value="other" {% if category_filter == 'other' %}selected{% endif %}>📦 Other</option>
+                </select>
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.875rem; color: #374151; display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 1rem;">🏢</span> Property
+                </label>
+                <select name="property" style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.875rem; transition: all 0.2s;"
+                        onfocus="this.style.borderColor='#ef4444'; this.style.boxShadow='0 0 0 3px rgba(239,68,68,0.1)'"
+                        onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'">
+                    <option value="all">All Properties</option>
+                    {% for property in properties %}
+                    <option value="{{ property.pk }}" {% if property_filter == property.pk|stringformat:"s" %}selected{% endif %}>
+                        {{ property.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.875rem; color: #374151; display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 1rem;">📅</span> Month
+                </label>
+                <input type="month" name="month" value="{{ month_filter }}"
+                       style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.875rem; transition: all 0.2s;"
+                       onfocus="this.style.borderColor='#ef4444'; this.style.boxShadow='0 0 0 3px rgba(239,68,68,0.1)'"
+                       onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'">
+            </div>
+
+            <button type="submit" style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 6px rgba(239,68,68,0.3);"
+                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(239,68,68,0.4)'"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 6px rgba(239,68,68,0.3)'">
+                🔍 Apply Filters
+            </button>
+        </form>
+    </div>
+
+    <!-- Summary Stats - Enhanced -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+        <div style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); padding: 1.75rem; border-radius: 16px; box-shadow: 0 4px 6px rgba(239,68,68,0.15); transition: all 0.3s;"
+             onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(239,68,68,0.25)'"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(239,68,68,0.15)'">
+            <div style="color: #991b1b; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: 0.5px;">TOTAL EXPENSES</div>
+            <div style="font-size: 2rem; font-weight: 800; color: #dc2626;">KES {{ stats.total_expenses|floatformat:0|default:0 }}</div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%); padding: 1.75rem; border-radius: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); border: 2px solid #e5e7eb; transition: all 0.3s;"
+             onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.08)'"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 6px rgba(0,0,0,0.06)'">
+            <div style="color: #6b7280; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: 0.5px; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.25rem;">🔧</span> REPAIRS
+            </div>
+            <div style="font-size: 1.75rem; font-weight: 800; color: #1f2937;">{{ stats.count_repairs|default:0 }}</div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%); padding: 1.75rem; border-radius: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); border: 2px solid #e5e7eb; transition: all 0.3s;"
+             onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.08)'"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 6px rgba(0,0,0,0.06)'">
+            <div style="color: #6b7280; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: 0.5px; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.25rem;">🛠️</span> MAINTENANCE
+            </div>
+            <div style="font-size: 1.75rem; font-weight: 800; color: #1f2937;">{{ stats.count_maintenance|default:0 }}</div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%); padding: 1.75rem; border-radius: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); border: 2px solid #e5e7eb; transition: all 0.3s;"
+             onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.08)'"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 6px rgba(0,0,0,0.06)'">
+            <div style="color: #6b7280; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: 0.5px; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.25rem;">💧</span> UTILITIES
+            </div>
+            <div style="font-size: 1.75rem; font-weight: 800; color: #1f2937;">{{ stats.count_electricity|add:stats.count_water|default:0 }}</div>
+        </div>
+    </div>
+
+    <!-- Expenses Table - Enhanced -->
+    <div style="background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid #f3f4f6;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; color: #1f2937;">Expense Records</h2>
+
+        {% if expenses %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border-bottom: 2px solid #e5e7eb;">
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Date</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Category</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Description</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Property</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Vendor</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Amount</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Receipt</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in expenses %}
+                    <tr style="border-bottom: 1px solid #f3f4f6; transition: background 0.2s;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
+                        <td data-label="Date" style="padding: 1rem; color: #6b7280; font-weight: 500;">{{ expense.expense_date|date:"M d, Y" }}</td>
+                        <td data-label="Category" style="padding: 1rem;">
+                            <span style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); color: #1f2937; padding: 0.375rem 0.875rem; border-radius: 12px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.3px;">
+                                {{ expense.get_category_display }}
+                            </span>
+                        </td>
+                        <td data-label="Description" style="padding: 1rem; color: #374151;">{{ expense.description|truncatewords:10 }}</td>
+                        <td data-label="Property" style="padding: 1rem; font-weight: 500; color: #1f2937;">{{ expense.get_property_name }}</td>
+                        <td data-label="Vendor" style="padding: 1rem; color: #6b7280;">{{ expense.vendor_name|default:"-" }}</td>
+                        <td data-label="Amount" style="padding: 1rem; font-weight: 700; color: #dc2626; font-size: 1.125rem;">KES {{ expense.amount|floatformat:0 }}</td>
+                        <td data-label="Receipt" style="padding: 1rem;">
+                            {% if expense.receipt %}
+                            <a href="{{ expense.receipt.url }}" target="_blank" style="color: #2563eb; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; transition: color 0.2s;" onmouseover="this.style.color='#1d4ed8'" onmouseout="this.style.color='#2563eb'">
+                                <span style="font-size: 1.25rem;">📎</span> View
+                            </a>
+                            {% else %}
+                            <span style="color: #9ca3af; font-size: 0.875rem;">No receipt</span>
+                            {% endif %}
+                        </td>
+                        <td data-label="Actions" style="padding: 1rem;">
+                            <div style="display: flex; gap: 0.75rem;">
+                                <a href="{% url 'expenses:detail' expense.pk %}" style="color: #2563eb; text-decoration: none; font-weight: 600; font-size: 0.875rem; transition: color 0.2s;" onmouseover="this.style.color='#1d4ed8'" onmouseout="this.style.color='#2563eb'">View</a>
+                                <a href="{% url 'expenses:update' expense.pk %}" style="color: #6b7280; text-decoration: none; font-weight: 600; font-size: 0.875rem; transition: color 0.2s;" onmouseover="this.style.color='#374151'" onmouseout="this.style.color='#6b7280'">Edit</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 4rem; color: #6b7280;">
+            <div style="font-size: 4rem; margin-bottom: 1.5rem;">💸</div>
+            <p style="font-size: 1.25rem; margin-bottom: 0.5rem; font-weight: 600; color: #374151;">No expenses recorded yet</p>
+            <p style="font-size: 1rem; margin-bottom: 2rem;">Start tracking your property costs to calculate accurate profit margins</p>
+            <a href="{% url 'expenses:create' %}" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 0.875rem 1.75rem; text-decoration: none; border-radius: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(239,68,68,0.3); transition: all 0.2s;"
+               onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(239,68,68,0.4)'"
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(239,68,68,0.3)'">
+                <span style="font-size: 1.25rem;">+</span> Add First Expense
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

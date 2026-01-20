@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}Payments - TENARA{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem; max-width: 1400px; margin: 0 auto;">
+    
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 style="font-size: 2.5rem; font-weight: 800;">Payments</h1>
+            <p style="color: #6b7280; font-size: 1.125rem;">Track all rent payments and transactions</p>
+        </div>
+        <a href="{% url 'payments:record_manual' %}" class="btn btn-primary" style="background: #2563eb; color: white; padding: 0.75rem 1.5rem; text-decoration: none; border-radius: 8px; font-weight: 600;">
+            + Record Payment
+        </a>
+    </div>
+    
+    <!-- Filter Section -->
+    <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 2rem;">
+        <form method="get" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end;">
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.875rem; color: #6b7280;">Payment Method</label>
+                <select name="method" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 8px;">
+                    <option value="">All Methods</option>
+                    <option value="mpesa" {% if method_filter == 'mpesa' %}selected{% endif %}>M-Pesa</option>
+                    <option value="cash" {% if method_filter == 'cash' %}selected{% endif %}>Cash</option>
+                    <option value="bank" {% if method_filter == 'bank' %}selected{% endif %}>Bank Transfer</option>
+                    <option value="cheque" {% if method_filter == 'cheque' %}selected{% endif %}>Cheque</option>
+                </select>
+            </div>
+            
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.875rem; color: #6b7280;">Status</label>
+                <select name="status" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 8px;">
+                    <option value="">All Statuses</option>
+                    <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="failed" {% if status_filter == 'failed' %}selected{% endif %}>Failed</option>
+                </select>
+            </div>
+            
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.875rem; color: #6b7280;">Date Range</label>
+                <input type="month" name="month" value="{{ month_filter }}" 
+                       style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 8px;">
+            </div>
+            
+            <button type="submit" style="padding: 0.75rem 1.5rem; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                Apply Filters
+            </button>
+        </form>
+    </div>
+    
+    <!-- Summary Stats -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #10b981;">
+            <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">TOTAL COLLECTED</div>
+            <div style="font-size: 2rem; font-weight: 800; color: #10b981;">KES {{ total_collected|floatformat:0|default:0 }}</div>
+            <div style="font-size: 0.875rem; color: #6b7280; margin-top: 0.25rem;">This month</div>
+        </div>
+        
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #2563eb;">
+            <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">M-PESA PAYMENTS</div>
+            <div style="font-size: 2rem; font-weight: 800; color: #2563eb;">{{ mpesa_count|default:0 }}</div>
+            <div style="font-size: 0.875rem; color: #6b7280; margin-top: 0.25rem;">KES {{ mpesa_total|floatformat:0|default:0 }}</div>
+        </div>
+        
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #6b7280;">
+            <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">OTHER METHODS</div>
+            <div style="font-size: 2rem; font-weight: 800; color: #1f2937;">{{ other_count|default:0 }}</div>
+            <div style="font-size: 0.875rem; color: #6b7280; margin-top: 0.25rem;">KES {{ other_total|floatformat:0|default:0 }}</div>
+        </div>
+        
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #f59e0b;">
+            <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">PENDING</div>
+            <div style="font-size: 2rem; font-weight: 800; color: #f59e0b;">{{ pending_count|default:0 }}</div>
+            <div style="font-size: 0.875rem; color: #6b7280; margin-top: 0.25rem;">Awaiting confirmation</div>
+        </div>
+    </div>
+    
+    <!-- Payments Table -->
+    <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Recent Payments</h2>
+        
+        {% if payments %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Date</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Tenant</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Invoice</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Amount</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Method</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Reference</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Status</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                    <tr style="border-bottom: 1px solid #f3f4f6;">
+                        <td style="padding: 1rem;">{{ payment.payment_date|date:"M d, Y H:i" }}</td>
+                        <td style="padding: 1rem;">
+                            <div style="font-weight: 600;">{{ payment.invoice.lease.tenant.user.get_full_name }}</div>
+                            <div style="font-size: 0.875rem; color: #6b7280;">{{ payment.invoice.lease.unit.unit_property.name }} - Unit {{ payment.invoice.lease.unit.unit_number }}</div>
+                        </td>
+                        <td style="padding: 1rem;">
+                            <a href="{% url 'invoicing:detail' payment.invoice.pk %}" style="color: #2563eb; text-decoration: none; font-weight: 600;">
+                                {{ payment.invoice.invoice_number }}
+                            </a>
+                        </td>
+                        <td style="padding: 1rem; font-weight: 700; color: #10b981;">KES {{ payment.amount|floatformat:0 }}</td>
+                        <td style="padding: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                {% if payment.payment_method == 'mpesa' %}
+                                <span style="font-size: 1.25rem;">📱</span>
+                                {% elif payment.payment_method == 'cash' %}
+                                <span style="font-size: 1.25rem;">💵</span>
+                                {% elif payment.payment_method == 'bank' %}
+                                <span style="font-size: 1.25rem;">🏦</span>
+                                {% else %}
+                                <span style="font-size: 1.25rem;">📝</span>
+                                {% endif %}
+                                {{ payment.get_payment_method_display }}
+                            </div>
+                            {% if payment.is_manual %}
+                            <div style="font-size: 0.75rem; color: #6b7280;">(Manual)</div>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 1rem; font-family: monospace; font-size: 0.875rem;">
+                            {{ payment.mpesa_receipt_number|default:payment.transaction_id|default:"-" }}
+                        </td>
+                        <td style="padding: 1rem;">
+                            {% if payment.status == 'confirmed' %}
+                            <span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">✓ Confirmed</span>
+                            {% elif payment.status == 'pending' %}
+                            <span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">⏳ Pending</span>
+                            {% else %}
+                            <span style="background: #fee2e2; color: #991b1b; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">✗ Failed</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 1rem;">
+                            {% if payment.payment_proof %}
+                            <a href="{{ payment.payment_proof.url }}" target="_blank" style="color: #2563eb; text-decoration: none; margin-right: 0.5rem;">View Proof</a>
+                            {% endif %}
+                            {% if payment.status == 'pending' %}
+                            <form method="post" action="{% url 'payments:confirm' payment.pk %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" style="color: #10b981; background: none; border: none; cursor: pointer; text-decoration: underline; font-weight: 600;">Confirm</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 3rem; color: #6b7280;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">💰</div>
+            <p style="font-size: 1.125rem; margin-bottom: 1rem;">No payments recorded yet</p>
+            <a href="{% url 'payments:record_manual' %}" class="btn btn-primary" style="background: #2563eb; color: white; padding: 0.75rem 1.5rem; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">
+                + Record First Payment
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    
+</div>
+{% endblock %}

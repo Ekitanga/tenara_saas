@@ -1,0 +1,816 @@
+{% extends 'base.html' %}
+
+{% block title %}Payments - TENARA{% endblock %}
+
+{% block content %}
+<style>
+    /* Premium Payment List Styles */
+    .payment-container {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* Page Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #111827;
+        margin: 0 0 0.25rem 0;
+        letter-spacing: -0.025em;
+    }
+
+    .page-subtitle {
+        color: #6b7280;
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .btn-primary-gradient {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        color: white;
+        padding: 0.75rem 1.25rem;
+        text-decoration: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary-gradient:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+        background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+        color: white;
+        text-decoration: none;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+    }
+
+    .stat-card.green::before { background: linear-gradient(to bottom, #10b981, #059669); }
+    .stat-card.blue::before { background: linear-gradient(to bottom, #3b82f6, #2563eb); }
+    .stat-card.gray::before { background: linear-gradient(to bottom, #9ca3af, #6b7280); }
+    .stat-card.amber::before { background: linear-gradient(to bottom, #f59e0b, #d97706); }
+
+    .stat-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .stat-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.125rem;
+    }
+
+    .stat-icon.green { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); }
+    .stat-icon.blue { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); }
+    .stat-icon.gray { background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); }
+    .stat-icon.amber { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); }
+
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #111827;
+        line-height: 1;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-value.green { color: #059669; }
+    .stat-value.blue { color: #2563eb; }
+    .stat-value.amber { color: #d97706; }
+
+    .stat-subtext {
+        font-size: 0.8125rem;
+        color: #6b7280;
+    }
+
+    /* Filter Card */
+    .filter-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.25rem 1.5rem;
+        border: 1px solid #e5e7eb;
+        margin-bottom: 1.5rem;
+    }
+
+    .filter-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .filter-label {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: #374151;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    .filter-input,
+    .filter-select {
+        width: 100%;
+        padding: 0.625rem 0.875rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 0.9375rem;
+        background: #f9fafb;
+        transition: all 0.2s ease;
+        color: #111827;
+    }
+
+    .filter-input:focus,
+    .filter-select:focus {
+        outline: none;
+        border-color: #2563eb;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .filter-btn {
+        padding: 0.625rem 1.25rem;
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .filter-btn:hover {
+        background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+        transform: translateY(-1px);
+    }
+
+    /* Premium Card */
+    .premium-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        transition: all 0.2s ease;
+    }
+
+    .premium-card:hover {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #f3f4f6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(to bottom, #fafafa, white);
+    }
+
+    .card-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #111827;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Premium Table */
+    .premium-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .premium-table thead tr {
+        background: #f9fafb;
+    }
+
+    .premium-table th {
+        text-align: left;
+        padding: 0.875rem 1rem;
+        font-weight: 600;
+        font-size: 0.75rem;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .premium-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #f3f4f6;
+        vertical-align: middle;
+    }
+
+    .premium-table tbody tr {
+        transition: all 0.15s ease;
+    }
+
+    .premium-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .premium-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Payment Info Cell */
+    .payment-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+    }
+
+    .tenant-name {
+        font-weight: 600;
+        color: #111827;
+        font-size: 0.9375rem;
+    }
+
+    .property-unit {
+        font-size: 0.8125rem;
+        color: #6b7280;
+    }
+
+    /* Invoice Link */
+    .invoice-link {
+        color: #2563eb;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.875rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        transition: all 0.15s ease;
+    }
+
+    .invoice-link:hover {
+        color: #1d4ed8;
+        text-decoration: underline;
+    }
+
+    /* Amount */
+    .amount {
+        font-weight: 700;
+        color: #059669;
+        font-size: 0.9375rem;
+    }
+
+    /* Payment Method */
+    .method-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.375rem 0.75rem;
+        background: #f3f4f6;
+        border-radius: 8px;
+        font-size: 0.8125rem;
+        color: #374151;
+    }
+
+    .method-icon {
+        font-size: 1.125rem;
+    }
+
+    .method-label {
+        font-weight: 500;
+    }
+
+    .method-note {
+        font-size: 0.6875rem;
+        color: #9ca3af;
+        margin-top: 0.125rem;
+    }
+
+    /* Reference Code */
+    .reference-code {
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        font-size: 0.8125rem;
+        color: #374151;
+        background: #f9fafb;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+    }
+
+    /* Status Pills */
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-pill.confirmed {
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        color: #065f46;
+    }
+
+    .status-pill.pending {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        color: #92400e;
+    }
+
+    .status-pill.failed {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        color: #991b1b;
+    }
+
+    /* Action Links */
+    .action-links {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .action-link {
+        color: #2563eb;
+        text-decoration: none;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        transition: all 0.15s ease;
+    }
+
+    .action-link:hover {
+        color: #1d4ed8;
+        text-decoration: underline;
+    }
+
+    .action-link.confirm {
+        color: #059669;
+    }
+
+    .action-link.confirm:hover {
+        color: #047857;
+    }
+
+    .confirm-form {
+        display: inline;
+    }
+
+    .confirm-btn {
+        background: none;
+        border: none;
+        color: #059669;
+        font-weight: 600;
+        font-size: 0.8125rem;
+        cursor: pointer;
+        padding: 0;
+        text-decoration: underline;
+    }
+
+    .confirm-btn:hover {
+        color: #047857;
+    }
+
+    /* Date Cell */
+    .date-cell {
+        font-size: 0.875rem;
+        color: #374151;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin: 0 auto 1.5rem;
+    }
+
+    .empty-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-text {
+        color: #6b7280;
+        margin-bottom: 1.5rem;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Mobile Optimization */
+    @media (max-width: 768px) {
+        .payment-container {
+            padding: 1rem;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+        }
+
+        .btn-primary-gradient {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .stat-card {
+            padding: 1rem;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+        }
+
+        .stat-icon {
+            width: 28px;
+            height: 28px;
+            font-size: 0.875rem;
+        }
+
+        .filter-form {
+            grid-template-columns: 1fr;
+        }
+
+        .filter-btn {
+            width: 100%;
+        }
+
+        /* Table to Card Conversion - CRITICAL FIX */
+        .premium-card {
+            overflow: visible;
+        }
+
+        .premium-table {
+            display: block;
+            overflow: visible;
+        }
+
+        .premium-table thead {
+            display: none;
+        }
+
+        .premium-table tbody {
+            display: block;
+        }
+
+        .premium-table tr {
+            display: block;
+            margin-bottom: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1rem;
+            background: white;
+        }
+
+        .premium-table td {
+            display: block;
+            padding: 0.75rem 0;
+            border: none;
+            text-align: left !important;
+        }
+
+        .premium-table td::before {
+            content: attr(data-label);
+            display: block;
+            font-weight: 700;
+            color: #6b7280;
+            font-size: 0.6875rem;
+            text-transform: uppercase;
+            margin-bottom: 0.375rem;
+            letter-spacing: 0.05em;
+        }
+
+        .premium-table td:first-child {
+            padding-top: 0;
+        }
+
+        .premium-table td:last-child {
+            padding-bottom: 0;
+        }
+
+        .payment-info {
+            margin-bottom: 0.25rem;
+        }
+
+        .action-links {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .method-badge {
+            display: inline-flex;
+            width: auto;
+        }
+
+        .reference-code {
+            display: inline-block;
+            word-break: break-all;
+            max-width: 100%;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            width: auto;
+        }
+
+        .amount {
+            font-size: 1.125rem;
+        }
+
+        /* Hide overflow wrapper on mobile */
+        div[style*="overflow-x"] {
+            overflow-x: visible !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stat-card {
+            padding: 1rem;
+        }
+    }
+</style>
+
+<div class="payment-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Payments</h1>
+            <p class="page-subtitle">Track all rent payments and transactions</p>
+        </div>
+        <a href="{% url 'payments:record_manual' %}" class="btn-primary-gradient">
+            <span>+</span> Record Payment
+        </a>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card green">
+            <div class="stat-header">
+                <span class="stat-label">Total Collected</span>
+                <div class="stat-icon green">💰</div>
+            </div>
+            <div class="stat-value green">KES {{ total_collected|floatformat:0|default:"0" }}</div>
+            <div class="stat-subtext">This month</div>
+        </div>
+
+        <div class="stat-card blue">
+            <div class="stat-header">
+                <span class="stat-label">M-Pesa Payments</span>
+                <div class="stat-icon blue">📱</div>
+            </div>
+            <div class="stat-value blue">{{ mpesa_count|default:"0" }}</div>
+            <div class="stat-subtext">KES {{ mpesa_total|floatformat:0|default:"0" }}</div>
+        </div>
+
+        <div class="stat-card gray">
+            <div class="stat-header">
+                <span class="stat-label">Other Methods</span>
+                <div class="stat-icon gray">🏦</div>
+            </div>
+            <div class="stat-value">{{ other_count|default:"0" }}</div>
+            <div class="stat-subtext">KES {{ other_total|floatformat:0|default:"0" }}</div>
+        </div>
+
+        <div class="stat-card amber">
+            <div class="stat-header">
+                <span class="stat-label">Pending</span>
+                <div class="stat-icon amber">⏳</div>
+            </div>
+            <div class="stat-value amber">{{ pending_count|default:"0" }}</div>
+            <div class="stat-subtext">Awaiting confirmation</div>
+        </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="filter-card">
+        <form method="get" class="filter-form">
+            <div class="filter-group">
+                <label class="filter-label">
+                    <span>💳</span> Payment Method
+                </label>
+                <select name="method" class="filter-select">
+                    <option value="">All Methods</option>
+                    <option value="mpesa" {% if method_filter == 'mpesa' %}selected{% endif %}>M-Pesa</option>
+                    <option value="cash" {% if method_filter == 'cash' %}selected{% endif %}>Cash</option>
+                    <option value="bank" {% if method_filter == 'bank' %}selected{% endif %}>Bank Transfer</option>
+                    <option value="cheque" {% if method_filter == 'cheque' %}selected{% endif %}>Cheque</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">
+                    <span>📊</span> Status
+                </label>
+                <select name="status" class="filter-select">
+                    <option value="">All Statuses</option>
+                    <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="failed" {% if status_filter == 'failed' %}selected{% endif %}>Failed</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">
+                    <span>📅</span> Date Range
+                </label>
+                <input type="month" name="month" value="{{ month_filter }}" class="filter-input">
+            </div>
+
+            <div class="filter-group">
+                <button type="submit" class="filter-btn">
+                    <span>🔍</span> Apply Filters
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Payments Table -->
+    <div class="premium-card">
+        <div class="card-header">
+            <h2 class="card-title">
+                <span>📋</span> Recent Payments
+            </h2>
+        </div>
+
+        {% if payments %}
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Tenant</th>
+                    <th>Invoice</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Reference</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                <tr>
+                    <td data-label="Date">
+                        <span class="date-cell">{{ payment.payment_date|date:"M d, Y" }}<br><small style="color: #9ca3af;">{{ payment.payment_date|date:"H:i" }}</small></span>
+                    </td>
+                    <td data-label="Tenant">
+                        <div class="payment-info">
+                            <span class="tenant-name">{{ payment.invoice.lease.tenant.user.get_full_name }}</span>
+                            <span class="property-unit">{{ payment.invoice.lease.unit.unit_property.name }} - Unit {{ payment.invoice.lease.unit.unit_number }}</span>
+                        </div>
+                    </td>
+                    <td data-label="Invoice">
+                        <a href="{% url 'invoicing:detail' payment.invoice.pk %}" class="invoice-link">
+                            📄 {{ payment.invoice.invoice_number }}
+                        </a>
+                    </td>
+                    <td data-label="Amount">
+                        <span class="amount">KES {{ payment.amount|floatformat:0 }}</span>
+                    </td>
+                    <td data-label="Method">
+                        <div class="method-badge">
+                            <span class="method-icon">
+                                {% if payment.payment_method == 'mpesa' %}📱{% elif payment.payment_method == 'cash' %}💵{% elif payment.payment_method == 'bank' %}🏦{% else %}📝{% endif %}
+                            </span>
+                            <span class="method-label">{{ payment.get_payment_method_display }}</span>
+                        </div>
+                        {% if payment.is_manual %}
+                        <div class="method-note">(Manual)</div>
+                        {% endif %}
+                    </td>
+                    <td data-label="Reference">
+                        <span class="reference-code">{{ payment.mpesa_receipt_number|default:payment.transaction_id|default:"-" }}</span>
+                    </td>
+                    <td data-label="Status">
+                        {% if payment.status == 'confirmed' %}
+                        <span class="status-pill confirmed">✓ Confirmed</span>
+                        {% elif payment.status == 'pending' %}
+                        <span class="status-pill pending">⏳ Pending</span>
+                        {% else %}
+                        <span class="status-pill failed">✗ Failed</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="Actions">
+                        <div class="action-links">
+                            {% if payment.payment_proof %}
+                            <a href="{{ payment.payment_proof.url }}" target="_blank" class="action-link">View Proof</a>
+                            {% endif %}
+                            {% if payment.status == 'pending' %}
+                            <form method="post" action="{% url 'payments:confirm' payment.pk %}" class="confirm-form">
+                                {% csrf_token %}
+                                <button type="submit" class="confirm-btn">✓ Confirm</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">💰</div>
+            <h3 class="empty-title">No Payments Recorded Yet</h3>
+            <p class="empty-text">Payments will appear here once tenants start paying rent or you record manual payments.</p>
+            <a href="{% url 'payments:record_manual' %}" class="btn-primary-gradient">
+                <span>+</span> Record First Payment
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

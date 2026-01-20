@@ -1,0 +1,432 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Lease - TENARA{% endblock %}
+
+{% block content %}
+<style>
+    /* Premium Lease Form Styles */
+    .form-container {
+        padding: 2rem;
+        max-width: 800px;
+        margin: 0 auto;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6b7280;
+        text-decoration: none;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .back-link:hover {
+        color: #2563eb;
+    }
+
+    .form-header {
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .form-icon {
+        width: 72px;
+        height: 72px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin: 0 auto 1rem;
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .form-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #111827;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .form-subtitle {
+        color: #6b7280;
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-section {
+        padding: 1.75rem 2rem;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .form-section:last-of-type {
+        border-bottom: none;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .section-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    .section-icon.green { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); }
+    .section-icon.blue { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); }
+    .section-icon.purple { background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%); }
+
+    .section-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 0;
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        color: #374151;
+    }
+
+    .form-label .required {
+        color: #ef4444;
+        margin-left: 0.25rem;
+    }
+
+    .input-wrapper {
+        position: relative;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1rem;
+        opacity: 0.5;
+    }
+
+    .form-input,
+    .form-select {
+        width: 100%;
+        padding: 0.875rem 1rem 0.875rem 2.75rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 1rem;
+        color: #111827;
+        background: #fafafa;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: #10b981;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+    }
+
+    .form-hint {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        margin-top: 0.5rem;
+        font-size: 0.8125rem;
+        color: #6b7280;
+    }
+
+    .form-hint a {
+        color: #2563eb;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .form-hint a:hover {
+        text-decoration: underline;
+    }
+
+    .checkbox-card {
+        display: flex;
+        align-items: center;
+        padding: 1rem 1.25rem;
+        background: #f9fafb;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .checkbox-card:hover {
+        background: #f3f4f6;
+        border-color: #d1d5db;
+    }
+
+    .checkbox-card input {
+        width: 20px;
+        height: 20px;
+        margin-right: 0.75rem;
+        cursor: pointer;
+        accent-color: #10b981;
+    }
+
+    .checkbox-card input:checked + .checkbox-content .checkbox-label {
+        color: #059669;
+    }
+
+    .checkbox-label {
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .form-actions {
+        padding: 1.75rem 2rem;
+        background: linear-gradient(to top, #f9fafb, white);
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn-submit {
+        flex: 1;
+        padding: 1rem 1.5rem;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+    }
+
+    .btn-cancel {
+        flex: 0.6;
+        padding: 1rem 1.5rem;
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        color: #374151;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .btn-cancel:hover {
+        background: #f9fafb;
+        border-color: #d1d5db;
+        text-decoration: none;
+    }
+
+    .info-box {
+        margin-top: 1.5rem;
+        padding: 1rem 1.25rem;
+        background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+        border-radius: 12px;
+        border: 1px solid #a7f3d0;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .info-box-icon {
+        font-size: 1.25rem;
+    }
+
+    .info-box-text {
+        font-size: 0.875rem;
+        color: #065f46;
+        line-height: 1.5;
+    }
+
+    @media (max-width: 640px) {
+        .form-container {
+            padding: 1rem;
+        }
+
+        .form-section {
+            padding: 1.25rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+            padding: 1.25rem;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            order: 2;
+        }
+    }
+</style>
+
+<div class="form-container">
+    <a href="{% url 'tenants:list' %}" class="back-link">
+        <span>←</span> Back to Tenants
+    </a>
+
+    <div class="form-header">
+        <div class="form-icon">📋</div>
+        <h1 class="form-title">Create New Lease</h1>
+        <p class="form-subtitle">Assign a tenant to a vacant unit</p>
+    </div>
+
+    <div class="form-card">
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Tenant Selection -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon green">👤</div>
+                    <h2 class="section-title">Select Tenant</h2>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Tenant <span class="required">*</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">👤</span>
+                        <select name="tenant" required class="form-select">
+                            <option value="">Choose existing tenant</option>
+                            {% for tenant in tenants %}
+                            <option value="{{ tenant.pk }}">{{ tenant.user.get_full_name }} ({{ tenant.user.phone_number }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-hint">
+                        <span>💡</span> Don't see the tenant? <a href="{% url 'tenants:create' %}">Add new tenant</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unit Selection -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon blue">🏠</div>
+                    <h2 class="section-title">Select Unit</h2>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Unit <span class="required">*</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">🚪</span>
+                        <select name="unit" required class="form-select">
+                            <option value="">Choose vacant unit</option>
+                            {% for unit in vacant_units %}
+                            <option value="{{ unit.pk }}">{{ unit.unit_property.name }} — Unit {{ unit.unit_number }} (KES {{ unit.monthly_rent|floatformat:0 }}/month)</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-hint">
+                        <span>💡</span> Only vacant units are shown
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lease Details -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon purple">📅</div>
+                    <h2 class="section-title">Lease Details</h2>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Start Date <span class="required">*</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">📅</span>
+                        <input type="date" name="start_date" required class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Deposit Amount (KES)
+                    </label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">💰</span>
+                        <input type="number" name="deposit_amount" step="0.01" value="0" class="form-input" placeholder="e.g., 30000">
+                    </div>
+                    <div class="form-hint">
+                        <span>💡</span> Usually 1-2 months rent as security deposit
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-card">
+                        <input type="checkbox" name="deposit_paid">
+                        <div class="checkbox-content">
+                            <span class="checkbox-label">✓ Deposit already paid</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="info-box">
+                    <span class="info-box-icon">💡</span>
+                    <div class="info-box-text">
+                        The rent amount will be automatically set based on the selected unit's monthly rent configuration.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">
+                    <span>✓</span> Create Lease
+                </button>
+                <a href="{% url 'tenants:list' %}" class="btn-cancel">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

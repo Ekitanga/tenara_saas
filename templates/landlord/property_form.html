@@ -1,0 +1,462 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if property %}Edit Property{% else %}Add Property{% endif %} - TENARA{% endblock %}
+
+{% block content %}
+<style>
+    /* Premium Property Form Styles */
+    .form-container {
+        padding: 2rem;
+        max-width: 700px;
+        margin: 0 auto;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* Back Link */
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6b7280;
+        text-decoration: none;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .back-link:hover {
+        color: #2563eb;
+    }
+
+    /* Page Header */
+    .form-header {
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .form-icon {
+        width: 72px;
+        height: 72px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin: 0 auto 1rem;
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .form-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #111827;
+        margin: 0 0 0.5rem 0;
+        letter-spacing: -0.025em;
+    }
+
+    .form-subtitle {
+        color: #6b7280;
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    /* Form Card */
+    .form-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-section {
+        padding: 1.75rem 2rem;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .form-section:last-of-type {
+        border-bottom: none;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .section-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    .section-icon.info { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); }
+    .section-icon.location { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); }
+    .section-icon.details { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); }
+
+    .section-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 0;
+    }
+
+    /* Form Group */
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        color: #374151;
+    }
+
+    .form-label .required {
+        color: #ef4444;
+        margin-left: 0.25rem;
+    }
+
+    .input-wrapper {
+        position: relative;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.125rem;
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.875rem 1rem 0.875rem 2.75rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 1rem;
+        color: #111827;
+        background: #fafafa;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #2563eb;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+
+    .form-input::placeholder {
+        color: #9ca3af;
+    }
+
+    .form-input.no-icon {
+        padding-left: 1rem;
+    }
+
+    .form-textarea {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 1rem;
+        color: #111827;
+        background: #fafafa;
+        transition: all 0.2s ease;
+        resize: vertical;
+        min-height: 120px;
+        font-family: inherit;
+        box-sizing: border-box;
+    }
+
+    .form-textarea:focus {
+        outline: none;
+        border-color: #2563eb;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+
+    .form-textarea::placeholder {
+        color: #9ca3af;
+    }
+
+    .form-hint {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.375rem;
+        margin-top: 0.5rem;
+        font-size: 0.8125rem;
+        color: #6b7280;
+    }
+
+    .form-hint span {
+        font-size: 0.875rem;
+    }
+
+    /* Form Actions */
+    .form-actions {
+        padding: 1.75rem 2rem;
+        background: linear-gradient(to top, #f9fafb, white);
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn-submit {
+        flex: 1;
+        padding: 1rem 1.5rem;
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+        background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+    }
+
+    .btn-submit:active {
+        transform: translateY(0);
+    }
+
+    .btn-cancel {
+        flex: 0.6;
+        padding: 1rem 1.5rem;
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        color: #374151;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .btn-cancel:hover {
+        background: #f9fafb;
+        border-color: #d1d5db;
+        color: #111827;
+        text-decoration: none;
+    }
+
+    /* Tips Box */
+    .tips-box {
+        margin-top: 1.5rem;
+        padding: 1.25rem;
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        border-radius: 12px;
+        border: 1px solid #bfdbfe;
+    }
+
+    .tips-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+        font-weight: 700;
+        color: #1d4ed8;
+        font-size: 0.9375rem;
+    }
+
+    .tips-list {
+        margin: 0;
+        padding-left: 1.25rem;
+        color: #1e40af;
+        font-size: 0.875rem;
+        line-height: 1.6;
+    }
+
+    .tips-list li {
+        margin-bottom: 0.25rem;
+    }
+
+    .tips-list li:last-child {
+        margin-bottom: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+        .form-container {
+            padding: 1rem;
+        }
+
+        .form-section {
+            padding: 1.25rem 1.25rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+            padding: 1.25rem;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            order: 2;
+        }
+
+        .btn-submit {
+            order: 1;
+        }
+    }
+</style>
+
+<div class="form-container">
+    <!-- Back Link -->
+    <a href="{% url 'property_list' %}" class="back-link">
+        <span>←</span> Back to Properties
+    </a>
+
+    <!-- Form Header -->
+    <div class="form-header">
+        <div class="form-icon">
+            {% if property %}✏️{% else %}🏢{% endif %}
+        </div>
+        <h1 class="form-title">
+            {% if property %}Edit Property{% else %}Add New Property{% endif %}
+        </h1>
+        <p class="form-subtitle">
+            {% if property %}
+            Update your property details below
+            {% else %}
+            Enter your property details to get started
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="form-card">
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Property Info Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon info">🏠</div>
+                    <h2 class="section-title">Property Information</h2>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Property Name <span class="required">*</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">🏢</span>
+                        <input type="text" 
+                               name="name" 
+                               class="form-input" 
+                               required
+                               value="{% if property %}{{ property.name }}{% endif %}"
+                               placeholder="e.g., Kilimani Apartments">
+                    </div>
+                    <div class="form-hint">
+                        <span>💡</span> Choose a memorable name for easy identification
+                    </div>
+                </div>
+            </div>
+
+            <!-- Location Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon location">📍</div>
+                    <h2 class="section-title">Location Details</h2>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Location / Address <span class="required">*</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">📍</span>
+                        <input type="text" 
+                               name="location" 
+                               class="form-input" 
+                               required
+                               value="{% if property %}{{ property.location }}{% endif %}"
+                               placeholder="e.g., Kilimani Road, Nairobi">
+                    </div>
+                    <div class="form-hint">
+                        <span>💡</span> Include street name and area for tenants to find easily
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon details">📝</div>
+                    <h2 class="section-title">Additional Details</h2>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Description <span style="color: #9ca3af; font-weight: normal;">(Optional)</span>
+                    </label>
+                    <textarea name="description" 
+                              class="form-textarea"
+                              placeholder="Describe amenities, nearby landmarks, parking, security features...">{% if property %}{{ property.description }}{% endif %}</textarea>
+                    <div class="form-hint">
+                        <span>💡</span> A good description helps attract quality tenants
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">
+                    {% if property %}
+                    <span>💾</span> Update Property
+                    {% else %}
+                    <span>✓</span> Add Property
+                    {% endif %}
+                </button>
+                <a href="{% url 'property_list' %}" class="btn-cancel">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tips Box -->
+    <div class="tips-box">
+        <div class="tips-header">
+            <span>💡</span> Pro Tips
+        </div>
+        <ul class="tips-list">
+            <li>After creating a property, you can add individual units</li>
+            <li>Include security and parking info in the description</li>
+            <li>Mention nearby schools, hospitals, and shopping centers</li>
+            <li>You can edit property details anytime</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

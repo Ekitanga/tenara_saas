@@ -1,0 +1,286 @@
+{% extends 'superadmin/base.html' %}
+
+{% block title %}Activity Log{% endblock %}
+{% block page_title %}Activity Log{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Page Header */
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .page-header-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--white) 0%, var(--light) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .page-header-subtitle {
+        color: var(--light);
+        font-size: 0.9rem;
+        margin-top: 0.25rem;
+    }
+
+    /* Activity Tabs */
+    .activity-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        background: var(--card-bg);
+        padding: 0.5rem;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        width: fit-content;
+    }
+
+    .activity-tab {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        border: none;
+        background: transparent;
+        color: var(--light);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+
+    .activity-tab:hover {
+        color: var(--white);
+        background: var(--darker);
+    }
+
+    .activity-tab.active {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+    }
+
+    /* Activity Card */
+    .activity-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        overflow: hidden;
+        animation: fadeInUp 0.4s ease;
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .activity-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .activity-header i {
+        color: var(--primary);
+    }
+
+    .activity-title {
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .activity-body {
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
+    /* Activity Item */
+    .activity-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        transition: background 0.2s ease;
+    }
+
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+
+    .activity-item:hover {
+        background: rgba(99, 102, 241, 0.05);
+    }
+
+    .activity-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .activity-icon.signup {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+    }
+
+    .activity-icon.payment {
+        background: rgba(99, 102, 241, 0.15);
+        color: var(--primary-light);
+    }
+
+    .activity-icon.login {
+        background: rgba(14, 165, 233, 0.15);
+        color: #38bdf8;
+    }
+
+    .activity-icon.subscription {
+        background: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+    }
+
+    .activity-content {
+        flex: 1;
+    }
+
+    .activity-text {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+        line-height: 1.4;
+    }
+
+    .activity-text strong {
+        color: var(--primary-light);
+    }
+
+    .activity-meta {
+        font-size: 0.8rem;
+        color: var(--light);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .activity-time {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    /* Section Grid */
+    .section-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--light);
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.3;
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+        .section-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <h1 class="page-header-title">Activity Log</h1>
+    <p class="page-header-subtitle">Monitor recent platform activity and events</p>
+</div>
+
+<!-- Section Grid -->
+<div class="section-grid">
+    <!-- Recent Signups -->
+    <div class="activity-card">
+        <div class="activity-header">
+            <i class="fas fa-user-plus"></i>
+            <h3 class="activity-title">Recent Signups</h3>
+        </div>
+        <div class="activity-body">
+            {% if recent_users %}
+                {% for user in recent_users %}
+                <div class="activity-item">
+                    <div class="activity-icon signup">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-text">
+                            <strong>{{ user.username }}</strong> registered as 
+                            {% if user.role == 'landlord' %}a landlord{% elif user.role == 'tenant' %}a tenant{% else %}{{ user.role }}{% endif %}
+                        </div>
+                        <div class="activity-meta">
+                            <span class="activity-time">
+                                <i class="fas fa-clock"></i>
+                                {{ user.date_joined|timesince }} ago
+                            </span>
+                            <span>{{ user.email }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-users"></i>
+                    <p>No recent signups</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Payments -->
+    <div class="activity-card">
+        <div class="activity-header">
+            <i class="fas fa-credit-card"></i>
+            <h3 class="activity-title">Recent Subscription Payments</h3>
+        </div>
+        <div class="activity-body">
+            {% if recent_payments %}
+                {% for payment in recent_payments %}
+                <div class="activity-item">
+                    <div class="activity-icon payment">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-text">
+                            <strong>{{ payment.subscription.landlord.user.username }}</strong> made a payment of 
+                            <strong>KSh {{ payment.amount|floatformat:0 }}</strong>
+                        </div>
+                        <div class="activity-meta">
+                            <span class="activity-time">
+                                <i class="fas fa-clock"></i>
+                                {{ payment.payment_date|timesince }} ago
+                            </span>
+                            <span>{{ payment.payment_method|default:"M-Pesa" }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-credit-card"></i>
+                    <p>No recent payments</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

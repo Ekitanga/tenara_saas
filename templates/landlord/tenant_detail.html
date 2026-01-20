@@ -1,0 +1,893 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ lease.tenant.user.get_full_name }} - TENARA{% endblock %}
+
+{% block content %}
+<style>
+    /* Premium Tenant Detail Styles */
+    .tenant-detail-container {
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* Back Link */
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6b7280;
+        text-decoration: none;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        margin-bottom: 1rem;
+        transition: all 0.2s ease;
+    }
+
+    .back-link:hover {
+        color: #2563eb;
+    }
+
+    /* Page Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+
+    .tenant-profile {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+    }
+
+    .tenant-avatar-large {
+        width: 72px;
+        height: 72px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 800;
+        font-size: 1.75rem;
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .tenant-info h1 {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #111827;
+        margin: 0 0 0.375rem 0;
+        letter-spacing: -0.025em;
+    }
+
+    .tenant-location {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6b7280;
+        font-size: 1rem;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-outline {
+        padding: 0.625rem 1.25rem;
+        border: 2px solid #e5e7eb;
+        color: #374151;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        background: white;
+    }
+
+    .btn-outline:hover {
+        border-color: #2563eb;
+        color: #2563eb;
+        background: #eff6ff;
+        text-decoration: none;
+    }
+
+    .btn-danger {
+        padding: 0.625rem 1.25rem;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+    }
+
+    .btn-danger:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+
+    @media (max-width: 1024px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 640px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+    }
+
+    .stat-card.blue::before { background: linear-gradient(to bottom, #3b82f6, #2563eb); }
+    .stat-card.green::before { background: linear-gradient(to bottom, #10b981, #059669); }
+    .stat-card.red::before { background: linear-gradient(to bottom, #ef4444, #dc2626); }
+    .stat-card.purple::before { background: linear-gradient(to bottom, #8b5cf6, #7c3aed); }
+
+    .stat-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .stat-icon {
+        font-size: 1.25rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #111827;
+        line-height: 1;
+    }
+
+    .stat-value.blue { color: #2563eb; }
+    .stat-value.green { color: #059669; }
+    .stat-value.red { color: #ef4444; }
+
+    .stat-subtext {
+        font-size: 0.8125rem;
+        margin-top: 0.375rem;
+    }
+
+    .stat-subtext.paid {
+        color: #059669;
+        font-weight: 600;
+    }
+
+    .stat-subtext.pending {
+        color: #ef4444;
+        font-weight: 600;
+    }
+
+    /* Two Column Layout */
+    .two-column {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    @media (max-width: 768px) {
+        .two-column {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Premium Card */
+    .premium-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        transition: all 0.2s ease;
+    }
+
+    .premium-card:hover {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #f3f4f6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(to bottom, #fafafa, white);
+    }
+
+    .card-title {
+        font-size: 1.0625rem;
+        font-weight: 700;
+        color: #111827;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    /* Info Row */
+    .info-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        padding: 0.875rem 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .info-row:first-child {
+        padding-top: 0;
+    }
+
+    .info-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .info-value {
+        font-size: 0.9375rem;
+        color: #111827;
+        font-weight: 500;
+    }
+
+    .info-value a {
+        color: #2563eb;
+        text-decoration: none;
+    }
+
+    .info-value a:hover {
+        text-decoration: underline;
+    }
+
+    /* Status Badge */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+    }
+
+    .status-badge.active {
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        color: #065f46;
+    }
+
+    .status-badge.inactive {
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+
+    /* Premium Table */
+    .premium-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .premium-table thead tr {
+        background: #f9fafb;
+    }
+
+    .premium-table th {
+        text-align: left;
+        padding: 0.875rem 1rem;
+        font-weight: 600;
+        font-size: 0.75rem;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .premium-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #f3f4f6;
+        vertical-align: middle;
+        font-size: 0.9375rem;
+    }
+
+    .premium-table tbody tr {
+        transition: all 0.15s ease;
+    }
+
+    .premium-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .premium-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Invoice Number */
+    .invoice-number {
+        font-weight: 700;
+        color: #111827;
+    }
+
+    /* Amount Cells */
+    .amount {
+        font-weight: 700;
+    }
+
+    .amount.green { color: #059669; }
+    .amount.red { color: #ef4444; }
+    .amount.gray { color: #6b7280; }
+
+    /* Status Pills */
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.625rem;
+        border-radius: 20px;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-pill.paid { background: #d1fae5; color: #065f46; }
+    .status-pill.overdue { background: #fee2e2; color: #991b1b; }
+    .status-pill.partial { background: #fef3c7; color: #92400e; }
+    .status-pill.pending { background: #dbeafe; color: #1e40af; }
+
+    /* Action Links */
+    .action-links {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .action-link {
+        color: #2563eb;
+        text-decoration: none;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        transition: all 0.15s ease;
+    }
+
+    .action-link:hover {
+        color: #1d4ed8;
+        text-decoration: underline;
+    }
+
+    .action-link.pay {
+        color: #059669;
+    }
+
+    .action-link.pay:hover {
+        color: #047857;
+    }
+
+    /* Card Action Link */
+    .card-action {
+        color: #2563eb;
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .card-action:hover {
+        text-decoration: underline;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #6b7280;
+    }
+
+    .empty-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-overlay.show {
+        display: flex;
+    }
+
+    .modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 20px;
+        max-width: 480px;
+        width: 90%;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+        animation: modalSlideIn 0.3s ease;
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .modal-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .modal-icon {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .modal-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 0;
+    }
+
+    .modal-text {
+        color: #6b7280;
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+    }
+
+    .modal-form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .modal-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .modal-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    .modal-input:focus {
+        outline: none;
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .modal-btn {
+        flex: 1;
+        padding: 0.875rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+    }
+
+    .modal-btn.danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
+
+    .modal-btn.danger:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+    }
+
+    .modal-btn.cancel {
+        background: white;
+        border: 2px solid #e5e7eb;
+        color: #374151;
+    }
+
+    .modal-btn.cancel:hover {
+        background: #f9fafb;
+        border-color: #d1d5db;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .tenant-detail-container {
+            padding: 1rem;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .header-actions {
+            width: 100%;
+        }
+
+        .header-actions a,
+        .header-actions button {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .premium-table th,
+        .premium-table td {
+            padding: 0.75rem 0.5rem;
+            font-size: 0.8125rem;
+        }
+    }
+</style>
+
+<div class="tenant-detail-container">
+    <!-- Back Link -->
+    <a href="{% url 'tenants:list' %}" class="back-link">
+        <span>←</span> Back to Tenants
+    </a>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="tenant-profile">
+            <div class="tenant-avatar-large">
+                {{ lease.tenant.user.get_full_name|slice:":1"|upper }}
+            </div>
+            <div class="tenant-info">
+                <h1>{{ lease.tenant.user.get_full_name }}</h1>
+                <div class="tenant-location">
+                    <span>🏢</span> {{ lease.unit.unit_property.name }} — Unit {{ lease.unit.unit_number }}
+                </div>
+            </div>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'tenants:update' lease.pk %}" class="btn-outline">
+                <span>✏️</span> Edit Info
+            </a>
+            {% if lease.status == 'active' %}
+            <button onclick="document.getElementById('terminateModal').classList.add('show')" class="btn-danger">
+                <span>⚠️</span> Terminate Lease
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card blue">
+            <div class="stat-header">
+                <span class="stat-label">Monthly Rent</span>
+                <span class="stat-icon">💰</span>
+            </div>
+            <div class="stat-value blue">KES {{ lease.rent_amount|floatformat:0 }}</div>
+        </div>
+
+        <div class="stat-card green">
+            <div class="stat-header">
+                <span class="stat-label">Total Paid</span>
+                <span class="stat-icon">✅</span>
+            </div>
+            <div class="stat-value green">KES {{ total_paid|floatformat:0 }}</div>
+        </div>
+
+        <div class="stat-card {% if total_arrears > 0 %}red{% else %}green{% endif %}">
+            <div class="stat-header">
+                <span class="stat-label">Arrears</span>
+                <span class="stat-icon">{% if total_arrears > 0 %}⚠️{% else %}✓{% endif %}</span>
+            </div>
+            <div class="stat-value {% if total_arrears > 0 %}red{% else %}green{% endif %}">KES {{ total_arrears|floatformat:0 }}</div>
+        </div>
+
+        <div class="stat-card purple">
+            <div class="stat-header">
+                <span class="stat-label">Deposit</span>
+                <span class="stat-icon">🔐</span>
+            </div>
+            <div class="stat-value">KES {{ lease.deposit_amount|floatformat:0 }}</div>
+            {% if lease.deposit_paid %}
+            <div class="stat-subtext paid">✓ Paid</div>
+            {% else %}
+            <div class="stat-subtext pending">✗ Pending</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Two Column Layout -->
+    <div class="two-column">
+        <!-- Contact Information -->
+        <div class="premium-card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <span>👤</span> Contact Information
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="info-row">
+                    <span class="info-label">Email</span>
+                    <span class="info-value">
+                        {% if lease.tenant.user.email %}
+                        <a href="mailto:{{ lease.tenant.user.email }}">{{ lease.tenant.user.email }}</a>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Phone Number</span>
+                    <span class="info-value">
+                        <a href="tel:{{ lease.tenant.user.phone_number }}">{{ lease.tenant.user.phone_number }}</a>
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">National ID</span>
+                    <span class="info-value">{{ lease.tenant.national_id|default:"-" }}</span>
+                </div>
+
+                {% if lease.tenant.emergency_contact %}
+                <div class="info-row">
+                    <span class="info-label">Emergency Contact</span>
+                    <span class="info-value">
+                        {{ lease.tenant.emergency_contact_name|default:"Emergency Contact" }}<br>
+                        <a href="tel:{{ lease.tenant.emergency_contact }}" style="font-size: 0.875rem;">{{ lease.tenant.emergency_contact }}</a>
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Lease Details -->
+        <div class="premium-card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <span>📋</span> Lease Details
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="info-row">
+                    <span class="info-label">Status</span>
+                    <span class="info-value">
+                        {% if lease.status == 'active' %}
+                        <span class="status-badge active">
+                            <span>●</span> Active
+                        </span>
+                        {% else %}
+                        <span class="status-badge inactive">{{ lease.get_status_display }}</span>
+                        {% endif %}
+                    </span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Start Date</span>
+                    <span class="info-value">{{ lease.start_date|date:"F d, Y" }}</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Move In Date</span>
+                    <span class="info-value">{{ lease.move_in_date|date:"F d, Y"|default:"-" }}</span>
+                </div>
+
+                {% if lease.end_date %}
+                <div class="info-row">
+                    <span class="info-label">End Date</span>
+                    <span class="info-value">{{ lease.end_date|date:"F d, Y" }}</span>
+                </div>
+                {% endif %}
+
+                {% if lease.move_out_date %}
+                <div class="info-row">
+                    <span class="info-label">Move Out Date</span>
+                    <span class="info-value">{{ lease.move_out_date|date:"F d, Y" }}</span>
+                </div>
+                {% endif %}
+
+                {% if lease.notes %}
+                <div class="info-row">
+                    <span class="info-label">Notes</span>
+                    <span class="info-value" style="font-size: 0.875rem; color: #6b7280;">{{ lease.notes }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoices & Payments -->
+    <div class="premium-card">
+        <div class="card-header">
+            <h2 class="card-title">
+                <span>🧾</span> Invoices & Payments
+            </h2>
+            <a href="{% url 'invoicing:create' %}?lease={{ lease.pk }}" class="card-action">
+                + Create Invoice
+            </a>
+        </div>
+
+        {% if invoices %}
+        <div style="overflow-x: auto;">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th>Invoice #</th>
+                        <th>Period</th>
+                        <th>Amount</th>
+                        <th>Paid</th>
+                        <th>Balance</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for invoice in invoices %}
+                    <tr>
+                        <td><span class="invoice-number">{{ invoice.invoice_number }}</span></td>
+                        <td>{{ invoice.billing_month|date:"M Y" }}</td>
+                        <td><span class="amount">KES {{ invoice.total_amount|floatformat:0 }}</span></td>
+                        <td><span class="amount green">KES {{ invoice.amount_paid|floatformat:0 }}</span></td>
+                        <td>
+                            <span class="amount {% if invoice.balance > 0 %}red{% else %}gray{% endif %}">
+                                KES {{ invoice.balance|floatformat:0 }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if invoice.status == 'paid' %}
+                            <span class="status-pill paid">✓ Paid</span>
+                            {% elif invoice.status == 'overdue' %}
+                            <span class="status-pill overdue">⚠ Overdue</span>
+                            {% elif invoice.status == 'partial' %}
+                            <span class="status-pill partial">◐ Partial</span>
+                            {% else %}
+                            <span class="status-pill pending">⏳ Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-links">
+                                <a href="{% url 'invoicing:detail' invoice.pk %}" class="action-link">View</a>
+                                {% if invoice.balance > 0 %}
+                                <a href="{% url 'payments:record_manual' %}?invoice={{ invoice.pk }}" class="action-link pay">Pay</a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">🧾</div>
+            <p>No invoices yet</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Terminate Lease Modal -->
+<div id="terminateModal" class="modal-overlay" onclick="if(event.target === this) this.classList.remove('show')">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-icon">⚠️</div>
+            <h3 class="modal-title">Terminate Lease</h3>
+        </div>
+        <p class="modal-text">
+            Are you sure you want to terminate this lease for <strong>{{ lease.tenant.user.get_full_name }}</strong>? 
+            This action will mark the unit as vacant.
+        </p>
+
+        <form method="post" action="{% url 'tenants:lease_terminate' lease.pk %}">
+            {% csrf_token %}
+            <div class="modal-form-group">
+                <label class="modal-label">Termination Date</label>
+                <input type="date" name="termination_date" value="{{ today|date:'Y-m-d' }}" required class="modal-input">
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" class="modal-btn danger">
+                    Terminate Lease
+                </button>
+                <button type="button" onclick="document.getElementById('terminateModal').classList.remove('show')" class="modal-btn cancel">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

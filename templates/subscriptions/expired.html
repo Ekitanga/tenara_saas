@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Subscription Expired - TENARA{% endblock %}
+
+{% block content %}
+<div style="min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: 2rem;">
+    <div style="max-width: 600px; text-align: center;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">⏰</div>
+        <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem;">Subscription Expired</h1>
+        <p style="font-size: 1.25rem; color: #6b7280; margin-bottom: 2rem;">
+            Your subscription has expired. Renew now to continue managing your properties.
+        </p>
+        
+        <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem;">Your data is safe</h3>
+            <p style="color: #6b7280;">All your properties, tenants, and records are preserved. Simply renew your subscription to regain access.</p>
+        </div>
+        
+        <a href="{% url 'subscriptions:plans' %}" class="btn btn-primary" style="font-size: 1.125rem; padding: 1rem 2rem; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: 700; display: inline-block;">
+            View Plans & Renew
+        </a>
+    </div>
+</div>
+{% endblock %}

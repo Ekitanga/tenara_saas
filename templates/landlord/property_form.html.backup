@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if property %}Edit Property{% else %}Add Property{% endif %} - TENARA{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem; max-width: 800px; margin: 0 auto;">
+    
+    <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 2rem;">
+        {% if property %}Edit Property{% else %}Add New Property{% endif %}
+    </h1>
+    
+    <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Property Name *</label>
+                <input type="text" name="name" required 
+                       value="{% if property %}{{ property.name }}{% endif %}" 
+                       placeholder="e.g., Kilimani Apartments"
+                       style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 1rem;">
+            </div>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Location *</label>
+                <input type="text" name="location" required 
+                       value="{% if property %}{{ property.location }}{% endif %}" 
+                       placeholder="e.g., Kilimani Road, Nairobi"
+                       style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 1rem;">
+            </div>
+            
+            <div style="margin-bottom: 2rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Description (Optional)</label>
+                <textarea name="description" rows="4" 
+                          placeholder="Brief description of the property..."
+                          style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 1rem; font-family: inherit;">{% if property %}{{ property.description }}{% endif %}</textarea>
+                <p style="font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem;">
+                    Include details like amenities, nearby landmarks, or special features
+                </p>
+            </div>
+            
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" style="flex: 1; padding: 1rem; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer;">
+                    {% if property %}Update Property{% else %}Add Property{% endif %}
+                </button>
+                <a href="{% url 'property_list' %}" style="flex: 1; padding: 1rem; border: 2px solid #e5e7eb; border-radius: 8px; text-decoration: none; color: #1f2937; font-weight: 600; text-align: center; display: flex; align-items: center; justify-content: center;">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+    
+</div>
+{% endblock %}

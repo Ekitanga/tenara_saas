@@ -1,0 +1,501 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if expense %}Edit Expense{% else %}Add Expense{% endif %} - TENARA{% endblock %}
+
+{% block content %}
+<style>
+    /* Premium Expense Form Styles */
+    .form-container {
+        padding: 2rem;
+        max-width: 800px;
+        margin: 0 auto;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6b7280;
+        text-decoration: none;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .back-link:hover {
+        color: #ef4444;
+    }
+
+    .form-header {
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .form-icon {
+        width: 72px;
+        height: 72px;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin: 0 auto 1rem;
+        box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+    }
+
+    .form-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #111827;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .form-subtitle {
+        color: #6b7280;
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-section {
+        padding: 1.75rem 2rem;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .form-section:last-of-type {
+        border-bottom: none;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .section-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    .section-icon.red { background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); }
+    .section-icon.blue { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); }
+    .section-icon.purple { background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%); }
+
+    .section-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 0;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+    }
+
+    @media (max-width: 640px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        color: #374151;
+    }
+
+    .form-label .required {
+        color: #ef4444;
+        margin-left: 0.25rem;
+    }
+
+    .input-wrapper {
+        position: relative;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1rem;
+        opacity: 0.5;
+    }
+
+    .form-input,
+    .form-select {
+        width: 100%;
+        padding: 0.875rem 1rem 0.875rem 2.75rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 1rem;
+        color: #111827;
+        background: #fafafa;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    .form-input.no-icon {
+        padding-left: 1rem;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: #ef4444;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+    }
+
+    .form-textarea {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 1rem;
+        color: #111827;
+        background: #fafafa;
+        transition: all 0.2s ease;
+        resize: vertical;
+        min-height: 100px;
+        font-family: inherit;
+        box-sizing: border-box;
+    }
+
+    .form-textarea:focus {
+        outline: none;
+        border-color: #ef4444;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+    }
+
+    /* File Upload */
+    .file-upload {
+        border: 2px dashed #e5e7eb;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        background: #fafafa;
+    }
+
+    .file-upload:hover {
+        border-color: #ef4444;
+        background: #fef2f2;
+    }
+
+    .file-upload input {
+        display: none;
+    }
+
+    .file-upload-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .file-upload-text {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.25rem;
+    }
+
+    .file-upload-hint {
+        font-size: 0.8125rem;
+        color: #6b7280;
+    }
+
+    .current-file {
+        margin-top: 0.75rem;
+        padding: 0.75rem 1rem;
+        background: #f3f4f6;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .current-file a {
+        color: #2563eb;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .current-file a:hover {
+        text-decoration: underline;
+    }
+
+    .form-actions {
+        padding: 1.75rem 2rem;
+        background: linear-gradient(to top, #f9fafb, white);
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn-submit {
+        flex: 1;
+        padding: 1rem 1.5rem;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.35);
+    }
+
+    .btn-cancel {
+        flex: 0.6;
+        padding: 1rem 1.5rem;
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        color: #374151;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .btn-cancel:hover {
+        background: #f9fafb;
+        border-color: #d1d5db;
+        text-decoration: none;
+    }
+
+    @media (max-width: 640px) {
+        .form-container {
+            padding: 1rem;
+        }
+
+        .form-section {
+            padding: 1.25rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+            padding: 1.25rem;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            order: 2;
+        }
+    }
+</style>
+
+<div class="form-container">
+    <a href="{% url 'expenses:list' %}" class="back-link">
+        <span>←</span> Back to Expenses
+    </a>
+
+    <div class="form-header">
+        <div class="form-icon">{% if expense %}✏️{% else %}💸{% endif %}</div>
+        <h1 class="form-title">{% if expense %}Edit Expense{% else %}Add New Expense{% endif %}</h1>
+        <p class="form-subtitle">{% if expense %}Update expense details{% else %}Record a property-related expense{% endif %}</p>
+    </div>
+
+    <div class="form-card">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Expense Details -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon red">📋</div>
+                    <h2 class="section-title">Expense Details</h2>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">
+                            Category <span class="required">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🏷️</span>
+                            <select name="category" required class="form-select">
+                                <option value="">Select category</option>
+                                <option value="repairs" {% if expense and expense.category == 'repairs' %}selected{% endif %}>🔧 Repairs</option>
+                                <option value="electricity" {% if expense and expense.category == 'electricity' %}selected{% endif %}>⚡ Electricity</option>
+                                <option value="water" {% if expense and expense.category == 'water' %}selected{% endif %}>💧 Water</option>
+                                <option value="maintenance" {% if expense and expense.category == 'maintenance' %}selected{% endif %}>🛠️ Maintenance</option>
+                                <option value="insurance" {% if expense and expense.category == 'insurance' %}selected{% endif %}>🛡️ Insurance</option>
+                                <option value="taxes" {% if expense and expense.category == 'taxes' %}selected{% endif %}>📊 Property Taxes</option>
+                                <option value="salaries" {% if expense and expense.category == 'salaries' %}selected{% endif %}>👷 Salaries/Wages</option>
+                                <option value="security" {% if expense and expense.category == 'security' %}selected{% endif %}>🔒 Security Services</option>
+                                <option value="cleaning" {% if expense and expense.category == 'cleaning' %}selected{% endif %}>🧹 Cleaning Services</option>
+                                <option value="legal" {% if expense and expense.category == 'legal' %}selected{% endif %}>⚖️ Legal Fees</option>
+                                <option value="marketing" {% if expense and expense.category == 'marketing' %}selected{% endif %}>📢 Marketing</option>
+                                <option value="other" {% if expense and expense.category == 'other' %}selected{% endif %}>📦 Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Property <span style="color: #9ca3af; font-weight: normal;">(Optional)</span></label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🏢</span>
+                            <select name="property" class="form-select">
+                                <option value="">General (No specific property)</option>
+                                {% for property in properties %}
+                                <option value="{{ property.pk }}" {% if expense and expense.expense_property and expense.expense_property.pk == property.pk %}selected{% endif %}>
+                                    {{ property.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">
+                            Amount (KES) <span class="required">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">💰</span>
+                            <input type="number" name="amount" step="0.01" required
+                                   value="{% if expense %}{{ expense.amount }}{% endif %}"
+                                   placeholder="e.g., 5000"
+                                   class="form-input">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Expense Date <span class="required">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">📅</span>
+                            <input type="date" name="expense_date" required
+                                   value="{% if expense %}{{ expense.expense_date|date:'Y-m-d' }}{% endif %}"
+                                   class="form-input">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Description <span class="required">*</span>
+                    </label>
+                    <textarea name="description" required class="form-textarea"
+                              placeholder="Describe what this expense was for...">{% if expense %}{{ expense.description }}{% endif %}</textarea>
+                </div>
+            </div>
+
+            <!-- Vendor Information -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon blue">👷</div>
+                    <h2 class="section-title">Vendor Information <span style="color: #9ca3af; font-weight: normal; font-size: 0.875rem;">(Optional)</span></h2>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Vendor Name</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🏪</span>
+                            <input type="text" name="vendor_name"
+                                   value="{% if expense %}{{ expense.vendor_name }}{% endif %}"
+                                   placeholder="e.g., ABC Plumbing"
+                                   class="form-input">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Vendor Contact</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">📞</span>
+                            <input type="text" name="vendor_contact"
+                                   value="{% if expense %}{{ expense.vendor_contact }}{% endif %}"
+                                   placeholder="e.g., 0712345678"
+                                   class="form-input">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon purple">📎</div>
+                    <h2 class="section-title">Supporting Documents</h2>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Receipt / Invoice <span style="color: #9ca3af; font-weight: normal;">(Optional)</span></label>
+                    <label class="file-upload">
+                        <input type="file" name="receipt" accept="image/*,.pdf">
+                        <div class="file-upload-icon">🧾</div>
+                        <div class="file-upload-text">Click to upload receipt</div>
+                        <div class="file-upload-hint">Supports images and PDF files</div>
+                    </label>
+                    {% if expense and expense.receipt %}
+                    <div class="current-file">
+                        <span>📄</span>
+                        Current file: <a href="{{ expense.receipt.url }}" target="_blank">View existing receipt</a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Additional Notes <span style="color: #9ca3af; font-weight: normal;">(Optional)</span></label>
+                    <textarea name="notes" class="form-textarea" placeholder="Any additional notes...">{% if expense %}{{ expense.notes }}{% endif %}</textarea>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">
+                    <span>{% if expense %}💾{% else %}✓{% endif %}</span>
+                    {% if expense %}Update Expense{% else %}Add Expense{% endif %}
+                </button>
+                <a href="{% url 'expenses:list' %}" class="btn-cancel">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

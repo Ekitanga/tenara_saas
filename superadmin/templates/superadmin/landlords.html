@@ -1,0 +1,533 @@
+{% extends 'superadmin/base.html' %}
+
+{% block title %}Landlords{% endblock %}
+{% block page_title %}Landlord Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Page Header */
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .page-header-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--white) 0%, var(--light) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .page-header-subtitle {
+        color: var(--light);
+        font-size: 0.9rem;
+        margin-top: 0.25rem;
+    }
+
+    /* Filter Card */
+    .filter-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        animation: fadeInUp 0.4s ease;
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .filter-form {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+
+    .filter-group {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .filter-label {
+        display: block;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--light);
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .filter-input,
+    .filter-select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: var(--darker);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        color: var(--white);
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+    }
+
+    .filter-input:focus,
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .filter-btn {
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        border: none;
+        border-radius: 10px;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(99, 102, 241, 0.3);
+    }
+
+    .filter-btn-reset {
+        background: var(--darker);
+        border: 1px solid var(--border-color);
+    }
+
+    .filter-btn-reset:hover {
+        background: var(--card-bg);
+        border-color: var(--light);
+        box-shadow: none;
+    }
+
+    /* Stats Summary */
+    .stats-summary {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .stat-badge {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 0.75rem 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        animation: fadeInUp 0.4s ease;
+    }
+
+    .stat-badge i {
+        font-size: 1rem;
+    }
+
+    .stat-badge.primary i { color: var(--primary); }
+    .stat-badge.success i { color: var(--success); }
+    .stat-badge.warning i { color: var(--warning); }
+    .stat-badge.danger i { color: var(--danger); }
+
+    .stat-badge-value {
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .stat-badge-label {
+        color: var(--light);
+        font-size: 0.8rem;
+    }
+
+    /* Table Card */
+    .table-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        overflow: hidden;
+        animation: fadeInUp 0.5s ease;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .data-table th {
+        background: var(--darker);
+        padding: 1rem 1.25rem;
+        text-align: left;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--light);
+        font-weight: 600;
+        border-bottom: 1px solid var(--border-color);
+        white-space: nowrap;
+    }
+
+    .data-table td {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--border-color);
+        vertical-align: middle;
+    }
+
+    .data-table tbody tr {
+        transition: all 0.2s ease;
+    }
+
+    .data-table tbody tr:hover {
+        background: rgba(99, 102, 241, 0.05);
+    }
+
+    .data-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Landlord Cell */
+    .landlord-cell {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .landlord-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1rem;
+        color: white;
+    }
+
+    .landlord-details h4 {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .landlord-details p {
+        font-size: 0.8rem;
+        color: var(--light);
+    }
+
+    /* Status Badge */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-badge.active {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+    }
+
+    .status-badge.trial {
+        background: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+    }
+
+    .status-badge.expired {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+    }
+
+    .status-badge.suspended {
+        background: rgba(107, 114, 128, 0.15);
+        color: #9ca3af;
+    }
+
+    .status-badge i {
+        font-size: 0.6rem;
+    }
+
+    /* Metrics */
+    .metrics {
+        display: flex;
+        gap: 1.5rem;
+    }
+
+    .metric {
+        text-align: center;
+    }
+
+    .metric-value {
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .metric-label {
+        font-size: 0.7rem;
+        color: var(--light);
+        text-transform: uppercase;
+    }
+
+    /* Action Buttons */
+    .action-btns {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background: var(--darker);
+        color: var(--light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .action-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        background: rgba(99, 102, 241, 0.1);
+    }
+
+    .action-btn.danger:hover {
+        border-color: var(--danger);
+        color: var(--danger);
+        background: rgba(239, 68, 68, 0.1);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        background: var(--darker);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+    }
+
+    .empty-icon i {
+        font-size: 2rem;
+        color: var(--light);
+    }
+
+    .empty-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-text {
+        color: var(--light);
+        margin-bottom: 1.5rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .filter-form {
+            flex-direction: column;
+        }
+
+        .filter-group {
+            width: 100%;
+        }
+
+        .stats-summary {
+            flex-direction: column;
+        }
+
+        .metrics {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-header-title">Landlords</h1>
+        <p class="page-header-subtitle">Manage all registered landlords on the platform</p>
+    </div>
+</div>
+
+<!-- Filter Card -->
+<div class="filter-card">
+    <form class="filter-form" method="GET">
+        <div class="filter-group">
+            <label class="filter-label">Search</label>
+            <input type="text" name="search" class="filter-input" placeholder="Username, email, or business name..." value="{{ search_query }}">
+        </div>
+        <div class="filter-group" style="max-width: 200px;">
+            <label class="filter-label">Status</label>
+            <select name="status" class="filter-select">
+                <option value="">All Status</option>
+                <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                <option value="trial" {% if status_filter == 'trial' %}selected{% endif %}>Trial</option>
+                <option value="expired" {% if status_filter == 'expired' %}selected{% endif %}>Expired</option>
+                <option value="suspended" {% if status_filter == 'suspended' %}selected{% endif %}>Suspended</option>
+            </select>
+        </div>
+        <button type="submit" class="filter-btn">
+            <i class="fas fa-search"></i> Search
+        </button>
+        <a href="{% url 'superadmin:landlords' %}" class="filter-btn filter-btn-reset">
+            <i class="fas fa-redo"></i> Reset
+        </a>
+    </form>
+</div>
+
+<!-- Stats Summary -->
+<div class="stats-summary">
+    <div class="stat-badge primary">
+        <i class="fas fa-users"></i>
+        <div>
+            <div class="stat-badge-value">{{ total_count }}</div>
+            <div class="stat-badge-label">Total Results</div>
+        </div>
+    </div>
+</div>
+
+<!-- Table Card -->
+<div class="table-card">
+    {% if landlords %}
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Landlord</th>
+                    <th>Subscription</th>
+                    <th>Properties</th>
+                    <th>Joined</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in landlords %}
+                <tr>
+                    <td>
+                        <div class="landlord-cell">
+                            <div class="landlord-avatar" style="background: linear-gradient(135deg, 
+                                {% cycle 'var(--primary)' 'var(--success)' 'var(--warning)' 'var(--secondary)' %}, 
+                                {% cycle 'var(--primary-light)' '#34d399' '#fbbf24' '#38bdf8' %});">
+                                {{ item.user.username|slice:":1"|upper }}
+                            </div>
+                            <div class="landlord-details">
+                                <h4>{{ item.user.username }}</h4>
+                                <p>{{ item.user.email }}</p>
+                                {% if item.profile and item.profile.business_name %}
+                                <p><i class="fas fa-building" style="font-size: 0.7rem;"></i> {{ item.profile.business_name }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if item.subscription %}
+                            <span class="status-badge {{ item.subscription.status }}">
+                                <i class="fas fa-circle"></i>
+                                {{ item.subscription.status|title }}
+                            </span>
+                            <div style="margin-top: 0.25rem; font-size: 0.8rem; color: var(--light);">
+                                {{ item.subscription.plan.name }}
+                            </div>
+                        {% else %}
+                            <span class="status-badge expired">
+                                <i class="fas fa-circle"></i>
+                                No Plan
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="metrics">
+                            <div class="metric">
+                                <div class="metric-value">{{ item.properties_count }}</div>
+                                <div class="metric-label">Properties</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">{{ item.units_count }}</div>
+                                <div class="metric-label">Units</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">{{ item.tenants_count }}</div>
+                                <div class="metric-label">Tenants</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-size: 0.9rem;">{{ item.user.date_joined|date:"M d, Y" }}</div>
+                        <div style="font-size: 0.75rem; color: var(--light);">{{ item.user.date_joined|timesince }} ago</div>
+                    </td>
+                    <td>
+                        {% if item.user.is_active_account %}
+                            <span class="status-badge active">
+                                <i class="fas fa-check"></i> Active
+                            </span>
+                        {% else %}
+                            <span class="status-badge suspended">
+                                <i class="fas fa-ban"></i> Suspended
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-btns">
+                            <a href="{% url 'superadmin:landlord_detail' item.user.pk %}" class="action-btn" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="fas fa-users"></i>
+        </div>
+        <h3 class="empty-title">No Landlords Found</h3>
+        <p class="empty-text">{% if search_query or status_filter %}Try adjusting your search filters{% else %}No landlords have registered yet{% endif %}</p>
+        {% if search_query or status_filter %}
+        <a href="{% url 'superadmin:landlords' %}" class="filter-btn">
+            <i class="fas fa-redo"></i> Clear Filters
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

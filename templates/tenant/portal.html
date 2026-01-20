@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Tenant Portal - TENARA{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem; max-width: 1200px; margin: 0 auto;">
+
+    <!-- Header -->
+    <div style="margin-bottom: 2rem;">
+        <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">Welcome, {{ user.get_full_name|default:user.username }}!</h1>
+        <p style="color: #6b7280; font-size: 1.125rem;">Your rental information and payment history</p>
+    </div>
+
+    {% if current_lease %}
+    <!-- Current Lease Info -->
+    <div style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+            <div>
+                <div style="opacity: 0.9; font-size: 0.875rem; margin-bottom: 0.5rem;">YOUR UNIT</div>
+                <div style="font-size: 1.5rem; font-weight: 800;">{{ current_lease.unit.unit_property.name }}</div>
+                <div style="font-size: 1.125rem; opacity: 0.95;">Unit {{ current_lease.unit.unit_number }}</div>
+            </div>
+
+            <div>
+                <div style="opacity: 0.9; font-size: 0.875rem; margin-bottom: 0.5rem;">MONTHLY RENT</div>
+                <div style="font-size: 2rem; font-weight: 800;">KES {{ current_lease.rent_amount|floatformat:0 }}</div>
+            </div>
+
+            <div>
+                <div style="opacity: 0.9; font-size: 0.875rem; margin-bottom: 0.5rem;">LANDLORD</div>
+                <div style="font-size: 1.125rem; font-weight: 600;">{{ current_lease.unit.unit_property.landlord.business_name|default:current_lease.unit.unit_property.landlord.user.username }}</div>
+                <div style="opacity: 0.9;">{{ current_lease.unit.unit_property.landlord.user.phone_number }}</div>
+            </div>
+
+            <div>
+                <div style="opacity: 0.9; font-size: 0.875rem; margin-bottom: 0.5rem;">MOVE IN DATE</div>
+                <div style="font-size: 1.125rem; font-weight: 600;">{{ current_lease.move_in_date|date:"M d, Y"|default:current_lease.start_date|date:"M d, Y" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Outstanding Balance Alert -->
+    {% if total_arrears > 0 %}
+    <div style="background: #fee2e2; border-left: 4px solid #ef4444; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <div style="font-weight: 700; color: #991b1b; font-size: 1.125rem; margin-bottom: 0.25rem;">Outstanding Balance</div>
+                <div style="color: #7f1d1d;">You have unpaid invoices totaling KES {{ total_arrears|floatformat:0 }}</div>
+            </div>
+            <div style="font-size: 2rem; font-weight: 800; color: #ef4444;">KES {{ total_arrears|floatformat:0 }}</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Stats -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #10b981;">
+            <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">TOTAL PAID</div>
+            <div style="font-size: 2rem; font-weight: 800; color: #10b981;">KES {{ total_paid|floatformat:0 }}</div>
+            <div style="font-size: 0.875rem; color: #6b7280; margin-top: 0.25rem;">All time</div>
+        </div>
+
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #2563eb;">
+            <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">DEPOSIT STATUS</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: #2563eb;">
+                {% if current_lease.deposit_paid %}
+                ✓ Paid
+                {% else %}
+                ⏳ Pending
+                {% endif %}
+            </div>
+            <div style="font-size: 0.875rem; color: #6b7280; margin-top: 0.25rem;">KES {{ current_lease.deposit_amount|floatformat:0 }}</div>
+        </div>
+
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #6b7280;">
+            <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">INVOICES</div>
+            <div style="font-size: 2rem; font-weight: 800; color: #1f2937;">{{ invoices.count }}</div>
+            <div style="font-size: 0.875rem; color: #6b7280; margin-top: 0.25rem;">Total invoices</div>
+        </div>
+    </div>
+
+    <!-- Invoices Table -->
+    <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">My Invoices</h2>
+
+        {% if invoices %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Invoice #</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Period</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Amount</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Paid</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Balance</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Due Date</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for invoice in invoices %}
+                    <tr style="border-bottom: 1px solid #f3f4f6;">
+                        <td style="padding: 1rem; font-weight: 600;">{{ invoice.invoice_number }}</td>
+                        <td style="padding: 1rem;">{{ invoice.billing_month|date:"M Y" }}</td>
+                        <td style="padding: 1rem; font-weight: 600;">KES {{ invoice.total_amount|floatformat:0 }}</td>
+                        <td style="padding: 1rem; color: #10b981; font-weight: 600;">KES {{ invoice.amount_paid|floatformat:0 }}</td>
+                        <td style="padding: 1rem; font-weight: 600; color: {% if invoice.balance > 0 %}#ef4444{% else %}#6b7280{% endif %};">
+                            KES {{ invoice.balance|floatformat:0 }}
+                        </td>
+                        <td style="padding: 1rem;">{{ invoice.due_date|date:"M d, Y" }}</td>
+                        <td style="padding: 1rem;">
+                            {% if invoice.status == 'paid' %}
+                            <span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">Paid</span>
+                            {% elif invoice.status == 'overdue' %}
+                            <span style="background: #fee2e2; color: #991b1b; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">Overdue</span>
+                            {% elif invoice.status == 'partial' %}
+                            <span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">Partial</span>
+                            {% else %}
+                            <span style="background: #dbeafe; color: #1e40af; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">Pending</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p style="text-align: center; color: #6b7280; padding: 2rem;">No invoices yet</p>
+        {% endif %}
+    </div>
+
+    {% else %}
+    <!-- No Active Lease -->
+    <div style="background: white; padding: 3rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">🏠</div>
+        <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem;">No Active Lease</h2>
+        <p style="color: #6b7280; font-size: 1.125rem; margin-bottom: 2rem;">
+            You don't have an active lease yet. Contact your landlord to get started.
+        </p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

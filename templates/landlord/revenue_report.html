@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %}Revenue Report - TENARA{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem; max-width: 1400px; margin: 0 auto;">
+
+    <!-- Header -->
+    <div style="margin-bottom: 2rem;">
+        <a href="{% url 'reports:dashboard' %}" style="color: #6b7280; text-decoration: none; margin-bottom: 0.75rem; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 500; transition: color 0.2s;"
+           onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#6b7280'">
+            <span style="font-size: 1.25rem;">←</span> Back to Reports
+        </a>
+        <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;">
+            <div>
+                <h1 style="font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, #10b981 0%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem;">Revenue Report</h1>
+                <p style="color: #6b7280; font-size: 1.125rem;">{{ start_date|date:"M d, Y" }} - {{ end_date|date:"M d, Y" }}</p>
+            </div>
+            <button onclick="window.print()" style="padding: 0.75rem 1.5rem; border: 2px solid #e5e7eb; border-radius: 10px; background: white; color: #1f2937; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem;"
+                    onmouseover="this.style.borderColor='#10b981'; this.style.color='#10b981'; this.style.transform='translateY(-2px)'"
+                    onmouseout="this.style.borderColor='#e5e7eb'; this.style.color='#1f2937'; this.style.transform='translateY(0)'">
+                🖨️ Print Report
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+        <div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); padding: 1.75rem; border-radius: 16px; box-shadow: 0 4px 6px rgba(16,185,129,0.15);">
+            <div style="color: #065f46; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.75rem; letter-spacing: 0.5px;">TOTAL REVENUE</div>
+            <div style="font-size: 2.5rem; font-weight: 800; color: #059669;">KES {{ total_revenue|floatformat:0|default:0 }}</div>
+            <div style="font-size: 0.875rem; color: #047857; font-weight: 500;">All collected payments</div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 1.75rem; border-radius: 16px; box-shadow: 0 4px 6px rgba(37,99,235,0.15);">
+            <div style="color: #1e40af; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.75rem; letter-spacing: 0.5px;">EXPECTED REVENUE</div>
+            <div style="font-size: 2.5rem; font-weight: 800; color: #1d4ed8;">KES {{ expected_revenue|floatformat:0|default:0 }}</div>
+            <div style="font-size: 0.875rem; color: #1e40af; font-weight: 500;">Total invoiced amount</div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%); padding: 1.75rem; border-radius: 16px; box-shadow: 0 4px 6px rgba(139,92,246,0.15);">
+            <div style="color: #5b21b6; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.75rem; letter-spacing: 0.5px;">COLLECTION RATE</div>
+            <div style="font-size: 2.5rem; font-weight: 800; color: #7c3aed;">{{ collection_rate|floatformat:1|default:0 }}%</div>
+            <div style="font-size: 0.875rem; color: #6d28d9; font-weight: 500;">Collected vs Expected</div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 1.75rem; border-radius: 16px; box-shadow: 0 4px 6px rgba(245,158,11,0.15);">
+            <div style="color: #92400e; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.75rem; letter-spacing: 0.5px;">AVERAGE MONTHLY</div>
+            <div style="font-size: 2.5rem; font-weight: 800; color: #d97706;">KES {{ average_monthly|floatformat:0|default:0 }}</div>
+            <div style="font-size: 0.875rem; color: #b45309; font-weight: 500;">Average per month</div>
+        </div>
+    </div>
+
+    <!-- Monthly Breakdown -->
+    <div style="background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 2rem; border: 1px solid #f3f4f6;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Monthly Revenue Breakdown</h2>
+
+        {% if monthly_data %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border-bottom: 2px solid #e5e7eb;">
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Month</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Invoiced</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Collected</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Outstanding</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Collection %</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Payments</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for month in monthly_data %}
+                    <tr style="border-bottom: 1px solid #f3f4f6; transition: background 0.2s;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
+                        <td style="padding: 1rem; font-weight: 600;">{{ month.month|date:"F Y" }}</td>
+                        <td style="padding: 1rem; color: #6b7280;">KES {{ month.invoiced|floatformat:0 }}</td>
+                        <td style="padding: 1rem; color: #059669; font-weight: 600;">KES {{ month.collected|floatformat:0 }}</td>
+                        <td style="padding: 1rem; color: #dc2626; font-weight: 600;">KES {{ month.outstanding|floatformat:0 }}</td>
+                        <td style="padding: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="flex: 1; height: 10px; background: #f3f4f6; border-radius: 9999px; overflow: hidden;">
+                                    <div style="height: 100%; background: linear-gradient(90deg, #10b981 0%, #059669 100%); width: {{ month.collection_rate }}%;"></div>
+                                </div>
+                                <span style="font-weight: 700; min-width: 3rem;">{{ month.collection_rate|floatformat:1 }}%</span>
+                            </div>
+                        </td>
+                        <td style="padding: 1rem; color: #6b7280;">{{ month.payment_count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); font-weight: 700;">
+                        <td style="padding: 1rem;">TOTAL</td>
+                        <td style="padding: 1rem;">KES {{ total_invoiced|floatformat:0|default:0 }}</td>
+                        <td style="padding: 1rem; color: #059669;">KES {{ total_revenue|floatformat:0|default:0 }}</td>
+                        <td style="padding: 1rem; color: #dc2626;">KES {{ total_outstanding|floatformat:0|default:0 }}</td>
+                        <td style="padding: 1rem;">{{ collection_rate|floatformat:1|default:0 }}%</td>
+                        <td style="padding: 1rem;">{{ total_payments }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% else %}
+        <p style="text-align: center; color: #6b7280; padding: 3rem;">No revenue data for the selected period</p>
+        {% endif %}
+    </div>
+
+    <!-- Revenue by Property -->
+    <div style="background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid #f3f4f6;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Revenue by Property</h2>
+
+        {% if property_revenue %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border-bottom: 2px solid #e5e7eb;">
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Property</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Units</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Total Revenue</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">% of Total</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Avg per Unit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in property_revenue %}
+                    <tr style="border-bottom: 1px solid #f3f4f6; transition: background 0.2s;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
+                        <td style="padding: 1rem; font-weight: 600;">{{ item.property_name }}</td>
+                        <td style="padding: 1rem; color: #6b7280;">{{ item.unit_count }}</td>
+                        <td style="padding: 1rem; color: #059669; font-weight: 700; font-size: 1.125rem;">KES {{ item.revenue|floatformat:0 }}</td>
+                        <td style="padding: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="flex: 1; height: 10px; background: #f3f4f6; border-radius: 9999px; overflow: hidden;">
+                                    <div style="height: 100%; background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%); width: {{ item.percentage }}%;"></div>
+                                </div>
+                                <span style="font-weight: 700; min-width: 3rem;">{{ item.percentage|floatformat:1 }}%</span>
+                            </div>
+                        </td>
+                        <td style="padding: 1rem; font-weight: 600;">KES {{ item.avg_per_unit|floatformat:0 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p style="text-align: center; color: #6b7280; padding: 3rem;">No property data available</p>
+        {% endif %}
+    </div>
+
+</div>
+
+<style>
+@media print {
+    nav, button, a[href*="reports:dashboard"] {
+        display: none !important;
+    }
+}
+</style>
+{% endblock %}

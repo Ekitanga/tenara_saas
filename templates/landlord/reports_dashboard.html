@@ -1,0 +1,493 @@
+{% extends 'base.html' %}
+
+{% block title %}Reports Dashboard - TENARA{% endblock %}
+{% block page_title %}📊 Reports Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Reports Container */
+    .reports-container {
+        max-width: 100%;
+    }
+
+    /* Page Header */
+    .reports-header {
+        margin-bottom: 2rem;
+    }
+
+    .reports-title {
+        font-size: 2rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #1f2937 0%, #4b5563 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .reports-subtitle {
+        color: #6b7280;
+        font-size: 1rem;
+    }
+
+    /* Filter Section */
+    .filter-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        margin-bottom: 2rem;
+    }
+
+    .filter-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+        font-size: 0.875rem;
+    }
+
+    .form-input, .form-select {
+        padding: 0.75rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        width: 100%;
+        box-sizing: border-box;
+        font-family: inherit;
+    }
+
+    .form-input:focus, .form-select:focus {
+        outline: none;
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+
+    .btn-filter {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        font-family: inherit;
+        font-size: 0.875rem;
+    }
+
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-filter:active {
+        transform: translateY(0);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        transition: all 0.3s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    .stat-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+    .stat-icon.amber { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+    .stat-icon.blue { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; }
+    .stat-icon.red { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6b7280;
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #1f2937;
+    }
+
+    /* Section Title */
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Report Cards Grid */
+    .reports-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Report Card - Using CSS hover, NOT inline JS */
+    .report-card-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+    .report-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 2px solid transparent;
+        position: relative;
+    }
+
+    .report-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+    }
+
+    .report-card:active {
+        transform: translateY(-2px);
+    }
+
+    /* Color variants */
+    .report-card.green:hover { border-color: #10b981; }
+    .report-card.amber:hover { border-color: #f59e0b; }
+    .report-card.blue:hover { border-color: #2563eb; }
+    .report-card.red:hover { border-color: #ef4444; }
+    .report-card.purple:hover { border-color: #8b5cf6; }
+
+    .report-card-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .report-icon {
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        flex-shrink: 0;
+    }
+
+    .report-icon.green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+    .report-icon.amber { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); }
+    .report-icon.blue { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+    .report-icon.red { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
+    .report-icon.purple { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); }
+
+    .report-info h3 {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0 0 0.25rem 0;
+    }
+
+    .report-info p {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin: 0;
+    }
+
+    .report-cta {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: gap 0.2s;
+    }
+
+    .report-cta.green { color: #10b981; }
+    .report-cta.amber { color: #f59e0b; }
+    .report-cta.blue { color: #2563eb; }
+    .report-cta.red { color: #ef4444; }
+    .report-cta.purple { color: #8b5cf6; }
+
+    .report-card:hover .report-cta {
+        gap: 0.75rem;
+    }
+
+    .report-cta .arrow {
+        transition: transform 0.2s;
+    }
+
+    .report-card:hover .report-cta .arrow {
+        transform: translateX(4px);
+    }
+
+    /* ========== MOBILE RESPONSIVE ========== */
+    @media (max-width: 768px) {
+        .reports-title {
+            font-size: 1.5rem;
+        }
+
+        .filter-form {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .stat-card {
+            padding: 1rem;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+        }
+
+        .stat-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            font-size: 1.25rem;
+        }
+
+        .reports-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .report-card {
+            padding: 1.25rem;
+        }
+
+        .report-icon {
+            width: 3rem;
+            height: 3rem;
+            font-size: 1.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="reports-container">
+    <!-- Page Header -->
+    <div class="reports-header">
+        <h1 class="reports-title">📊 Reports Dashboard</h1>
+        <p class="reports-subtitle">Comprehensive analytics and insights for your properties</p>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-card">
+        <form method="get" class="filter-form">
+            <div class="form-group">
+                <label class="form-label">Property</label>
+                <select name="property" class="form-select">
+                    <option value="">All Properties</option>
+                    {% for property in properties %}
+                    <option value="{{ property.id }}" {% if request.GET.property == property.id|stringformat:"s" %}selected{% endif %}>
+                        {{ property.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Start Date</label>
+                <input type="date" name="start_date" class="form-input" value="{{ request.GET.start_date }}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">End Date</label>
+                <input type="date" name="end_date" class="form-input" value="{{ request.GET.end_date }}">
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn-filter">
+                    🔍 Filter Reports
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon green">💰</div>
+            <div class="stat-label">Total Revenue</div>
+            <div class="stat-value">KES <span class="format-number">{{ total_revenue|floatformat:0|default:"0" }}</span></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon amber">⚠️</div>
+            <div class="stat-label">Outstanding Arrears</div>
+            <div class="stat-value">KES <span class="format-number">{{ total_arrears|floatformat:0|default:"0" }}</span></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon blue">🏠</div>
+            <div class="stat-label">Occupancy Rate</div>
+            <div class="stat-value">{{ occupancy_rate|floatformat:1|default:"0" }}%</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon red">📉</div>
+            <div class="stat-label">Total Expenses</div>
+            <div class="stat-value">KES <span class="format-number">{{ total_expenses|floatformat:0|default:"0" }}</span></div>
+        </div>
+    </div>
+
+    <!-- Report Cards -->
+    <h2 class="section-title">📈 Available Reports</h2>
+    <div class="reports-grid">
+        <!-- Revenue Report -->
+        <a href="{% url 'reports:revenue' %}" class="report-card-link">
+            <div class="report-card green">
+                <div class="report-card-header">
+                    <div class="report-icon green">💰</div>
+                    <div class="report-info">
+                        <h3>Revenue Report</h3>
+                        <p>Monthly income breakdown and trends</p>
+                    </div>
+                </div>
+                <div class="report-cta green">
+                    View Detailed Report <span class="arrow">→</span>
+                </div>
+            </div>
+        </a>
+
+        <!-- Arrears Report -->
+        <a href="{% url 'reports:arrears' %}" class="report-card-link">
+            <div class="report-card amber">
+                <div class="report-card-header">
+                    <div class="report-icon amber">⚠️</div>
+                    <div class="report-info">
+                        <h3>Arrears Report</h3>
+                        <p>Outstanding balances and aging analysis</p>
+                    </div>
+                </div>
+                <div class="report-cta amber">
+                    View Detailed Report <span class="arrow">→</span>
+                </div>
+            </div>
+        </a>
+
+        <!-- Occupancy Report -->
+        <a href="{% url 'reports:occupancy' %}" class="report-card-link">
+            <div class="report-card blue">
+                <div class="report-card-header">
+                    <div class="report-icon blue">🏠</div>
+                    <div class="report-info">
+                        <h3>Occupancy Report</h3>
+                        <p>Unit availability and vacancy trends</p>
+                    </div>
+                </div>
+                <div class="report-cta blue">
+                    View Detailed Report <span class="arrow">→</span>
+                </div>
+            </div>
+        </a>
+
+        <!-- Expenses Report -->
+        <a href="{% url 'reports:expenses' %}" class="report-card-link">
+            <div class="report-card red">
+                <div class="report-card-header">
+                    <div class="report-icon red">📊</div>
+                    <div class="report-info">
+                        <h3>Expenses Report</h3>
+                        <p>Cost breakdown by category and property</p>
+                    </div>
+                </div>
+                <div class="report-cta red">
+                    View Detailed Report <span class="arrow">→</span>
+                </div>
+            </div>
+        </a>
+
+        <!-- Profit & Loss Report -->
+        <a href="{% url 'reports:profit' %}" class="report-card-link">
+            <div class="report-card purple">
+                <div class="report-card-header">
+                    <div class="report-icon purple">📈</div>
+                    <div class="report-info">
+                        <h3>Profit & Loss</h3>
+                        <p>Net income and financial summary</p>
+                    </div>
+                </div>
+                <div class="report-cta purple">
+                    View Detailed Report <span class="arrow">→</span>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Format numbers with commas
+    document.querySelectorAll('.format-number').forEach(function(el) {
+        var num = parseFloat(el.textContent.replace(/,/g, ''));
+        if (!isNaN(num)) {
+            el.textContent = num.toLocaleString('en-KE');
+        }
+    });
+
+    // Ensure all report card links work properly
+    document.querySelectorAll('.report-card-link').forEach(function(link) {
+        link.style.pointerEvents = 'auto';
+        link.style.cursor = 'pointer';
+        
+        // Backup click handler
+        link.addEventListener('click', function(e) {
+            if (this.href && !e.defaultPrevented) {
+                window.location.href = this.href;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Subscription - TENARA{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto; padding: 2rem;">
+    
+    <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 2rem;">Manage Subscription</h1>
+    
+    {% if subscription %}
+    <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Current Plan</h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+            <div>
+                <div style="color: #6b7280; font-weight: 600; margin-bottom: 0.5rem;">Plan</div>
+                <div style="font-size: 1.5rem; font-weight: 800; color: #2563eb;">{{ subscription.plan.name }}</div>
+            </div>
+            
+            <div>
+                <div style="color: #6b7280; font-weight: 600; margin-bottom: 0.5rem;">Monthly Cost</div>
+                <div style="font-size: 1.5rem; font-weight: 800;">KES {{ subscription.plan.monthly_price|floatformat:0 }}</div>
+            </div>
+            
+            <div>
+                <div style="color: #6b7280; font-weight: 600; margin-bottom: 0.5rem;">Status</div>
+                <div>
+                    {% if subscription.status == 'active' %}
+                    <span style="background: #d1fae5; color: #065f46; padding: 0.5rem 1rem; border-radius: 9999px; font-weight: 600;">Active</span>
+                    {% elif subscription.status == 'trial' %}
+                    <span style="background: #dbeafe; color: #1e40af; padding: 0.5rem 1rem; border-radius: 9999px; font-weight: 600;">Trial</span>
+                    {% else %}
+                    <span style="background: #fee2e2; color: #991b1b; padding: 0.5rem 1rem; border-radius: 9999px; font-weight: 600;">{{ subscription.get_status_display }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div>
+                <div style="color: #6b7280; font-weight: 600; margin-bottom: 0.5rem;">Renewal Date</div>
+                <div style="font-size: 1.125rem; font-weight: 600;">{{ subscription.end_date|date:"M d, Y" }}</div>
+            </div>
+            
+            <div>
+                <div style="color: #6b7280; font-weight: 600; margin-bottom: 0.5rem;">Units Used</div>
+                <div style="font-size: 1.125rem; font-weight: 600;">{{ units_used }} / {{ subscription.plan.max_units }}</div>
+            </div>
+            
+            <div>
+                <div style="color: #6b7280; font-weight: 600; margin-bottom: 0.5rem;">Days Remaining</div>
+                <div style="font-size: 1.125rem; font-weight: 600;">{{ subscription.days_remaining }} days</div>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 1rem;">
+            <a href="{% url 'subscriptions:plans' %}" class="btn btn-primary" style="padding: 0.75rem 1.5rem; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
+                Change Plan
+            </a>
+        </div>
+    </div>
+    
+    <!-- Payment History -->
+    <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Payment History</h2>
+        
+        {% if subscription.payments.all %}
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 2px solid #e5e7eb;">
+                    <th style="text-align: left; padding: 0.75rem; font-weight: 600; color: #6b7280;">Date</th>
+                    <th style="text-align: left; padding: 0.75rem; font-weight: 600; color: #6b7280;">Amount</th>
+                    <th style="text-align: left; padding: 0.75rem; font-weight: 600; color: #6b7280;">Status</th>
+                    <th style="text-align: left; padding: 0.75rem; font-weight: 600; color: #6b7280;">Receipt</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in subscription.payments.all %}
+                <tr style="border-bottom: 1px solid #f3f4f6;">
+                    <td style="padding: 1rem 0.75rem;">{{ payment.created_at|date:"M d, Y" }}</td>
+                    <td style="padding: 1rem 0.75rem; font-weight: 600;">KES {{ payment.amount|floatformat:0 }}</td>
+                    <td style="padding: 1rem 0.75rem;">
+                        {% if payment.status == 'confirmed' %}
+                        <span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">Paid</span>
+                        {% else %}
+                        <span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">{{ payment.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 1rem 0.75rem;">{{ payment.mpesa_receipt_number|default:"-" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="text-align: center; color: #6b7280; padding: 2rem;">No payment history yet</p>
+        {% endif %}
+    </div>
+    {% else %}
+    <div style="background: white; padding: 3rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center;">
+        <h2 style="font-size: 2rem; margin-bottom: 1rem;">No Active Subscription</h2>
+        <p style="color: #6b7280; margin-bottom: 2rem;">Subscribe to start using TENARA</p>
+        <a href="{% url 'subscriptions:plans' %}" class="btn btn-primary" style="padding: 1rem 2rem; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
+            View Plans
+        </a>
+    </div>
+    {% endif %}
+    
+</div>
+{% endblock %}

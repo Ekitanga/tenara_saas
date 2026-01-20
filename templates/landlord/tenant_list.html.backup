@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Tenants - TENARA{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem; max-width: 1400px; margin: 0 auto;">
+    
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 style="font-size: 2.5rem; font-weight: 800;">Tenants</h1>
+            <p style="color: #6b7280; font-size: 1.125rem;">Manage your tenants and leases</p>
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <a href="{% url 'tenants:create' %}" class="btn btn-primary" style="background: #2563eb; color: white; padding: 0.75rem 1.5rem; text-decoration: none; border-radius: 8px; font-weight: 600;">
+                + Add Tenant
+            </a>
+            <a href="{% url 'tenants:lease_create' %}" style="padding: 0.75rem 1.5rem; border: 2px solid #2563eb; color: #2563eb; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                + New Lease
+            </a>
+        </div>
+    </div>
+    
+    <!-- Active Tenants -->
+    <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 2rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Active Tenants</h2>
+        
+        {% if active_leases %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Tenant Name</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Phone</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Property</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Unit</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Rent</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Move In</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Status</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lease in active_leases %}
+                    <tr style="border-bottom: 1px solid #f3f4f6;">
+                        <td style="padding: 1rem;">
+                            <div style="font-weight: 600;">{{ lease.tenant.user.get_full_name }}</div>
+                            <div style="font-size: 0.875rem; color: #6b7280;">{{ lease.tenant.user.email }}</div>
+                        </td>
+                        <td style="padding: 1rem;">{{ lease.tenant.user.phone_number }}</td>
+                        <td style="padding: 1rem;">{{ lease.unit.unit_property.name }}</td>
+                        <td style="padding: 1rem; font-weight: 600;">{{ lease.unit.unit_number }}</td>
+                        <td style="padding: 1rem; font-weight: 600;">KES {{ lease.rent_amount|floatformat:0 }}</td>
+                        <td style="padding: 1rem;">{{ lease.move_in_date|date:"M d, Y"|default:lease.start_date|date:"M d, Y" }}</td>
+                        <td style="padding: 1rem;">
+                            <span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">Active</span>
+                        </td>
+                        <td style="padding: 1rem;">
+                            <a href="{% url 'tenants:detail' lease.pk %}" style="color: #2563eb; text-decoration: none; font-weight: 600;">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 3rem; color: #6b7280;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">👥</div>
+            <p style="font-size: 1.125rem; margin-bottom: 1rem;">No active tenants yet</p>
+            <a href="{% url 'tenants:create' %}" class="btn btn-primary" style="background: #2563eb; color: white; padding: 0.75rem 1.5rem; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">
+                + Add First Tenant
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Inactive Tenants -->
+    {% if inactive_leases %}
+    <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Recently Moved Out</h2>
+        
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Tenant Name</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Unit</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Move Out Date</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Status</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lease in inactive_leases %}
+                    <tr style="border-bottom: 1px solid #f3f4f6;">
+                        <td style="padding: 1rem; font-weight: 600;">{{ lease.tenant.user.get_full_name }}</td>
+                        <td style="padding: 1rem;">{{ lease.unit.unit_property.name }} - {{ lease.unit.unit_number }}</td>
+                        <td style="padding: 1rem;">{{ lease.move_out_date|date:"M d, Y"|default:"-" }}</td>
+                        <td style="padding: 1rem;">
+                            <span style="background: #f3f4f6; color: #6b7280; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">{{ lease.get_status_display }}</span>
+                        </td>
+                        <td style="padding: 1rem;">
+                            <a href="{% url 'tenants:detail' lease.pk %}" style="color: #2563eb; text-decoration: none;">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+    
+</div>
+{% endblock %}

@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+
+{% block title %}Profit & Loss Report - TENARA{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem; max-width: 1400px; margin: 0 auto;">
+
+    <!-- Header -->
+    <div style="margin-bottom: 2rem;">
+        <a href="{% url 'reports:dashboard' %}" style="color: #6b7280; text-decoration: none; margin-bottom: 0.75rem; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 500;"
+           onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#6b7280'">
+            ← Back to Reports
+        </a>
+        <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;">
+            <div>
+                <h1 style="font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Profit & Loss Statement</h1>
+                <p style="color: #6b7280; font-size: 1.125rem;">{{ start_date|date:"M d, Y" }} - {{ end_date|date:"M d, Y" }}</p>
+            </div>
+            <button onclick="window.print()" style="padding: 0.75rem 1.5rem; border: 2px solid #e5e7eb; border-radius: 10px; background: white; color: #1f2937; font-weight: 600; cursor: pointer;"
+                    onmouseover="this.style.borderColor='#8b5cf6'; this.style.color='#8b5cf6'" onmouseout="this.style.borderColor='#e5e7eb'; this.style.color='#1f2937'">
+                🖨️ Print Report
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+        <div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); padding: 1.75rem; border-radius: 16px; box-shadow: 0 4px 6px rgba(16,185,129,0.15);">
+            <div style="color: #065f46; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.75rem; letter-spacing: 0.5px;">TOTAL REVENUE</div>
+            <div style="font-size: 2.5rem; font-weight: 800; color: #059669;">KES {{ total_revenue|floatformat:0|default:0 }}</div>
+            <div style="font-size: 0.875rem; color: #047857; font-weight: 500;">Collected payments</div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); padding: 1.75rem; border-radius: 16px; box-shadow: 0 4px 6px rgba(239,68,68,0.15);">
+            <div style="color: #991b1b; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.75rem; letter-spacing: 0.5px;">TOTAL EXPENSES</div>
+            <div style="font-size: 2.5rem; font-weight: 800; color: #dc2626;">KES {{ total_expenses|floatformat:0|default:0 }}</div>
+            <div style="font-size: 0.875rem; color: #b91c1c; font-weight: 500;">All costs</div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, {% if net_profit >= 0 %}#dbeafe{% else %}#fee2e2{% endif %} 0%, {% if net_profit >= 0 %}#bfdbfe{% else %}#fecaca{% endif %} 100%); padding: 1.75rem; border-radius: 16px; box-shadow: 0 4px 6px {% if net_profit >= 0 %}rgba(37,99,235,0.15){% else %}rgba(239,68,68,0.15){% endif %};">
+            <div style="color: {% if net_profit >= 0 %}#1e40af{% else %}#991b1b{% endif %}; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.75rem; letter-spacing: 0.5px;">NET {% if net_profit >= 0 %}PROFIT{% else %}LOSS{% endif %}</div>
+            <div style="font-size: 2.5rem; font-weight: 800; color: {% if net_profit >= 0 %}#1d4ed8{% else %}#dc2626{% endif %};">
+                KES {{ net_profit|floatformat:0|default:0 }}
+            </div>
+            <div style="font-size: 0.875rem; color: {% if net_profit >= 0 %}#1e40af{% else %}#991b1b{% endif %}; font-weight: 500;">Revenue - Expenses</div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%); padding: 1.75rem; border-radius: 16px; box-shadow: 0 4px 6px rgba(139,92,246,0.15);">
+            <div style="color: #5b21b6; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.75rem; letter-spacing: 0.5px;">PROFIT MARGIN</div>
+            <div style="font-size: 2.5rem; font-weight: 800; color: #7c3aed;">{{ profit_margin|floatformat:1|default:0 }}%</div>
+            <div style="font-size: 0.875rem; color: #6d28d9; font-weight: 500;">Net profit / Revenue</div>
+        </div>
+    </div>
+
+    <!-- P&L Statement -->
+    <div style="background: white; padding: 2.5rem; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 2rem; border: 1px solid #f3f4f6;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 2rem;">Detailed Statement</h2>
+
+        <table style="width: 100%; border-collapse: collapse;">
+            <!-- REVENUE -->
+            <thead>
+                <tr style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-bottom: 3px solid #10b981;">
+                    <th colspan="2" style="text-align: left; padding: 1.25rem; font-weight: 800; color: #065f46; font-size: 1.125rem; letter-spacing: 0.5px;">
+                        💰 REVENUE
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom: 1px solid #f3f4f6;">
+                    <td style="padding: 1.25rem; padding-left: 2.5rem; color: #374151;">Rent Collected</td>
+                    <td style="padding: 1.25rem; text-align: right; font-weight: 700; color: #059669; font-size: 1.125rem;">KES {{ total_revenue|floatformat:0|default:0 }}</td>
+                </tr>
+                <tr style="background: #f0fdf4; font-weight: 700; border-bottom: 3px solid #10b981;">
+                    <td style="padding: 1.25rem; font-size: 1.125rem;">Total Revenue</td>
+                    <td style="padding: 1.25rem; text-align: right; color: #059669; font-size: 1.5rem;">KES {{ total_revenue|floatformat:0|default:0 }}</td>
+                </tr>
+            </tbody>
+
+            <!-- EXPENSES -->
+            <thead style="margin-top: 2rem;">
+                <tr style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-bottom: 3px solid #ef4444;">
+                    <th colspan="2" style="text-align: left; padding: 1.25rem; font-weight: 800; color: #991b1b; font-size: 1.125rem; letter-spacing: 0.5px;">
+                        💸 EXPENSES
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if expense_breakdown %}
+                    {% for category in expense_breakdown %}
+                    <tr style="border-bottom: 1px solid #f3f4f6;">
+                        <td style="padding: 1.25rem; padding-left: 2.5rem; color: #374151;">{{ category.category_display }}</td>
+                        <td style="padding: 1.25rem; text-align: right; font-weight: 700; color: #dc2626; font-size: 1.125rem;">KES {{ category.total|floatformat:0 }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="2" style="padding: 1.25rem; text-align: center; color: #6b7280;">No expenses recorded</td>
+                </tr>
+                {% endif %}
+                <tr style="background: #fef2f2; font-weight: 700; border-bottom: 3px solid #ef4444;">
+                    <td style="padding: 1.25rem; font-size: 1.125rem;">Total Expenses</td>
+                    <td style="padding: 1.25rem; text-align: right; color: #dc2626; font-size: 1.5rem;">KES {{ total_expenses|floatformat:0|default:0 }}</td>
+                </tr>
+            </tbody>
+
+            <!-- NET PROFIT -->
+            <tfoot>
+                <tr style="background: {% if net_profit >= 0 %}linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%){% else %}linear-gradient(135deg, #fee2e2 0%, #fecaca 100%){% endif %}; border-top: 4px solid {% if net_profit >= 0 %}#2563eb{% else %}#dc2626{% endif %};">
+                    <td style="padding: 2rem; font-weight: 800; font-size: 1.5rem; color: #1f2937;">NET {% if net_profit >= 0 %}PROFIT{% else %}LOSS{% endif %}</td>
+                    <td style="padding: 2rem; text-align: right; font-weight: 800; font-size: 2rem; color: {% if net_profit >= 0 %}#1d4ed8{% else %}#dc2626{% endif %};">
+                        KES {{ net_profit|floatformat:0|default:0 }}
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <!-- Monthly Trend -->
+    <div style="background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 2rem; border: 1px solid #f3f4f6;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Monthly Profit/Loss Trend</h2>
+
+        {% if monthly_profit %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border-bottom: 2px solid #e5e7eb;">
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Month</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Revenue</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Expenses</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Net Profit</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Margin</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Trend</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for month in monthly_profit %}
+                    <tr style="border-bottom: 1px solid #f3f4f6;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
+                        <td style="padding: 1rem; font-weight: 600;">{{ month.month|date:"F Y" }}</td>
+                        <td style="padding: 1rem; color: #059669; font-weight: 600;">KES {{ month.revenue|floatformat:0 }}</td>
+                        <td style="padding: 1rem; color: #dc2626; font-weight: 600;">KES {{ month.expenses|floatformat:0 }}</td>
+                        <td style="padding: 1rem; font-weight: 700; font-size: 1.125rem; color: {% if month.profit >= 0 %}#1d4ed8{% else %}#dc2626{% endif %};">
+                            KES {{ month.profit|floatformat:0 }}
+                        </td>
+                        <td style="padding: 1rem;">
+                            <span style="background: {% if month.margin >= 50 %}#d1fae5{% elif month.margin >= 30 %}#dbeafe{% elif month.margin >= 0 %}#fef3c7{% else %}#fee2e2{% endif %};
+                                         color: {% if month.margin >= 50 %}#065f46{% elif month.margin >= 30 %}#1e40af{% elif month.margin >= 0 %}#92400e{% else %}#991b1b{% endif %};
+                                         padding: 0.375rem 0.875rem; border-radius: 12px; font-size: 0.875rem; font-weight: 700;">
+                                {{ month.margin|floatformat:1 }}%
+                            </span>
+                        </td>
+                        <td style="padding: 1rem; font-size: 1.5rem;">
+                            {% if month.trend == 'up' %}
+                            <span style="color: #10b981;">↗</span>
+                            {% elif month.trend == 'down' %}
+                            <span style="color: #ef4444;">↘</span>
+                            {% else %}
+                            <span style="color: #6b7280;">→</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p style="text-align: center; color: #6b7280; padding: 3rem;">No monthly data available</p>
+        {% endif %}
+    </div>
+
+    <!-- Property Performance -->
+    <div style="background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid #f3f4f6;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Profit/Loss by Property</h2>
+
+        {% if property_profit %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border-bottom: 2px solid #e5e7eb;">
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Property</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Revenue</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Expenses</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Net Profit</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">ROI</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 700; color: #374151; font-size: 0.875rem;">Performance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in property_profit %}
+                    <tr style="border-bottom: 1px solid #f3f4f6;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
+                        <td style="padding: 1rem; font-weight: 600;">{{ item.property_name }}</td>
+                        <td style="padding: 1rem; color: #059669; font-weight: 600;">KES {{ item.revenue|floatformat:0 }}</td>
+                        <td style="padding: 1rem; color: #dc2626; font-weight: 600;">KES {{ item.expenses|floatformat:0 }}</td>
+                        <td style="padding: 1rem; font-weight: 700; color: {% if item.profit >= 0 %}#1d4ed8{% else %}#dc2626{% endif %};">
+                            KES {{ item.profit|floatformat:0 }}
+                        </td>
+                        <td style="padding: 1rem;">
+                            <span style="background: {% if item.roi >= 20 %}#d1fae5{% elif item.roi >= 10 %}#dbeafe{% elif item.roi >= 0 %}#fef3c7{% else %}#fee2e2{% endif %};
+                                         color: {% if item.roi >= 20 %}#065f46{% elif item.roi >= 10 %}#1e40af{% elif item.roi >= 0 %}#92400e{% else %}#991b1b{% endif %};
+                                         padding: 0.375rem 0.875rem; border-radius: 12px; font-size: 0.875rem; font-weight: 700;">
+                                {{ item.roi|floatformat:1 }}%
+                            </span>
+                        </td>
+                        <td style="padding: 1rem;">
+                            <div style="width: 100%; height: 10px; background: #f3f4f6; border-radius: 9999px; overflow: hidden;">
+                                <div style="height: 100%; background: {% if item.roi >= 20 %}#10b981{% elif item.roi >= 10 %}#2563eb{% elif item.roi >= 0 %}#f59e0b{% else %}#ef4444{% endif %}; width: {{ item.roi|default:0 }}%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); font-weight: 700;">
+                        <td style="padding: 1rem;">TOTAL</td>
+                        <td style="padding: 1rem; color: #059669;">KES {{ total_revenue|floatformat:0|default:0 }}</td>
+                        <td style="padding: 1rem; color: #dc2626;">KES {{ total_expenses|floatformat:0|default:0 }}</td>
+                        <td style="padding: 1rem; color: {% if net_profit >= 0 %}#1d4ed8{% else %}#dc2626{% endif %}; font-size: 1.125rem;">
+                            KES {{ net_profit|floatformat:0|default:0 }}
+                        </td>
+                        <td colspan="2"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% else %}
+        <p style="text-align: center; color: #6b7280; padding: 3rem;">No property data available</p>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+@media print {
+    nav, button, a[href*="reports:dashboard"] {
+        display: none !important;
+    }
+}
+</style>
+{% endblock %}

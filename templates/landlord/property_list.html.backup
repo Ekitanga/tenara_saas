@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Properties - TENARA{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem; max-width: 1400px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1 style="font-size: 2.5rem; font-weight: 800;">My Properties</h1>
+        <a href="{% url 'property_create' %}" class="btn btn-primary">+ Add Property</a>
+    </div>
+    
+    {% if properties %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">
+        {% for property in properties %}
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">{{ property.name }}</h3>
+            <p style="color: #6b7280; margin-bottom: 1rem;">📍 {{ property.location }}</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                    <div style="font-size: 0.875rem; color: #6b7280;">Total Units</div>
+                    <div style="font-size: 1.5rem; font-weight: 700;">{{ property.get_total_units }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.875rem; color: #6b7280;">Occupied</div>
+                    <div style="font-size: 1.5rem; font-weight: 700;">{{ property.get_occupied_units }}</div>
+                </div>
+            </div>
+            
+            <a href="{% url 'property_detail' property.pk %}" style="display: block; text-align: center; padding: 0.75rem; background: #f9fafb; border-radius: 8px; text-decoration: none; color: #2563eb; font-weight: 600;">
+                View Details →
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="background: white; padding: 4rem; border-radius: 12px; text-align: center;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">🏢</div>
+        <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem;">No Properties Yet</h2>
+        <p style="color: #6b7280; margin-bottom: 2rem;">Get started by adding your first property</p>
+        <a href="{% url 'property_create' %}" class="btn btn-primary">+ Add Property</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

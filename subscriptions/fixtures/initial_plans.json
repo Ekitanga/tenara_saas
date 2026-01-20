@@ -1,0 +1,91 @@
+[
+    {
+        "model": "subscriptions.subscriptionplan",
+        "pk": 1,
+        "fields": {
+            "name": "PLUS",
+            "max_units": 49,
+            "monthly_price": "2500.00",
+            "features": {
+                "properties": "unlimited",
+                "tenants": "unlimited",
+                "reports": "basic",
+                "sms": "100/month",
+                "email": "unlimited",
+                "support": "email"
+            },
+            "is_active": true,
+            "created_at": "2026-01-01T00:00:00Z",
+            "updated_at": "2026-01-01T00:00:00Z"
+        }
+    },
+    {
+        "model": "subscriptions.subscriptionplan",
+        "pk": 2,
+        "fields": {
+            "name": "PRO",
+            "max_units": 99,
+            "monthly_price": "5000.00",
+            "features": {
+                "properties": "unlimited",
+                "tenants": "unlimited",
+                "reports": "advanced",
+                "sms": "300/month",
+                "email": "unlimited",
+                "support": "email + phone",
+                "expense_tracking": true
+            },
+            "is_active": true,
+            "created_at": "2026-01-01T00:00:00Z",
+            "updated_at": "2026-01-01T00:00:00Z"
+        }
+    },
+    {
+        "model": "subscriptions.subscriptionplan",
+        "pk": 3,
+        "fields": {
+            "name": "BUSINESS",
+            "max_units": 250,
+            "monthly_price": "9500.00",
+            "features": {
+                "properties": "unlimited",
+                "tenants": "unlimited",
+                "reports": "premium",
+                "sms": "1000/month",
+                "email": "unlimited",
+                "support": "priority",
+                "expense_tracking": true,
+                "api_access": true,
+                "custom_reports": true
+            },
+            "is_active": true,
+            "created_at": "2026-01-01T00:00:00Z",
+            "updated_at": "2026-01-01T00:00:00Z"
+        }
+    },
+    {
+        "model": "subscriptions.subscriptionplan",
+        "pk": 4,
+        "fields": {
+            "name": "ENTERPRISE",
+            "max_units": 500,
+            "monthly_price": "15000.00",
+            "features": {
+                "properties": "unlimited",
+                "tenants": "unlimited",
+                "reports": "enterprise",
+                "sms": "unlimited",
+                "email": "unlimited",
+                "support": "dedicated account manager",
+                "expense_tracking": true,
+                "api_access": true,
+                "custom_reports": true,
+                "custom_branding": true,
+                "white_label": true
+            },
+            "is_active": true,
+            "created_at": "2026-01-01T00:00:00Z",
+            "updated_at": "2026-01-01T00:00:00Z"
+        }
+    }
+]

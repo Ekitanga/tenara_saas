@@ -1,0 +1,53 @@
+{% extends 'base.html' %} {% block title %}Invoice {{ invoice.invoice_number }}
+- TENARA{% endblock %} {% block content %}
+<div
+  style="
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  "
+>
+  <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 1.5rem">
+    Invoice {{ invoice.invoice_number }}
+  </h1>
+
+  <p><strong>Tenant:</strong> {{ invoice.lease.tenant.user.get_full_name }}</p>
+  <p>
+    <strong>Property:</strong> {{ invoice.lease.unit.unit_property.name }} -
+    Unit {{ invoice.lease.unit.unit_number }}
+  </p>
+  <p><strong>Billing Month:</strong> {{ invoice.billing_month|date:"F Y" }}</p>
+  <p><strong>Due Date:</strong> {{ invoice.due_date|date:"Y-m-d" }}</p>
+
+  <h3 style="margin-top: 2rem">Bill Breakdown</h3>
+  <ul>
+    <li>Rent: {{ invoice.rent_amount }}</li>
+    <li>Water: {{ invoice.water_amount }}</li>
+    <li>Garbage: {{ invoice.garbage_amount }}</li>
+    <li>Other Charges: {{ invoice.other_charges }}</li>
+  </ul>
+
+  <h3>Total Due: {{ total_due }}</h3>
+
+  {% if invoice.notes %}
+  <h3>Notes</h3>
+  <p>{{ invoice.notes }}</p>
+  {% endif %}
+
+  <div style="margin-top: 2rem">
+    <a
+      href="{% url 'invoicing:list' %}"
+      style="
+        padding: 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        text-decoration: none;
+      "
+      >Back to Invoices</a
+    >
+  </div>
+</div>
+{% endblock %}

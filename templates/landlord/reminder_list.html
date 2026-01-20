@@ -1,0 +1,585 @@
+{% extends 'base.html' %}
+
+{% block title %}Reminders - TENARA{% endblock %}
+{% block page_title %}🔔 Reminders{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Reminders Container */
+    .reminders-container {
+        max-width: 100%;
+    }
+
+    /* Page Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .page-header-text h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0 0 0.25rem 0;
+    }
+
+    .page-header-text p {
+        color: #6b7280;
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .btn-create {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        padding: 0.875rem 1.75rem;
+        text-decoration: none;
+        border-radius: 10px;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-create:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+        color: white;
+    }
+
+    .btn-create:active {
+        transform: translateY(0);
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        border-left: 4px solid;
+        transition: all 0.3s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    .stat-card.amber { border-left-color: #f59e0b; }
+    .stat-card.green { border-left-color: #10b981; }
+    .stat-card.blue { border-left-color: #2563eb; }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6b7280;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #1f2937;
+    }
+
+    /* Section Title */
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Active Reminders Grid */
+    .reminders-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .reminder-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        border: 2px solid #fbbf24;
+        transition: all 0.3s;
+    }
+
+    .reminder-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(245, 158, 11, 0.15);
+    }
+
+    .reminder-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        gap: 0.5rem;
+    }
+
+    .reminder-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0;
+        flex: 1;
+        word-break: break-word;
+    }
+
+    .reminder-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        white-space: nowrap;
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        color: #92400e;
+    }
+
+    .reminder-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .reminder-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    .reminder-meta-item strong {
+        color: #1f2937;
+    }
+
+    .reminder-description {
+        font-size: 0.875rem;
+        color: #6b7280;
+        line-height: 1.5;
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        background: #f9fafb;
+        border-radius: 8px;
+    }
+
+    .reminder-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-view, .btn-edit, .btn-complete {
+        padding: 0.625rem 1rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        border: 2px solid;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        cursor: pointer;
+        font-family: inherit;
+        background: white;
+    }
+
+    .btn-view {
+        border-color: #e5e7eb;
+        color: #1f2937;
+    }
+
+    .btn-view:hover {
+        border-color: #d1d5db;
+        background: #f9fafb;
+    }
+
+    .btn-edit {
+        border-color: #f59e0b;
+        color: #f59e0b;
+    }
+
+    .btn-edit:hover {
+        background: #f59e0b;
+        color: white;
+    }
+
+    .btn-complete {
+        border-color: #10b981;
+        color: #10b981;
+    }
+
+    .btn-complete:hover {
+        background: #10b981;
+        color: white;
+    }
+
+    /* Table Section */
+    .table-section {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .table-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .table-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    .premium-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .premium-table th {
+        background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+        padding: 1rem;
+        text-align: left;
+        font-weight: 700;
+        color: #374151;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid #e5e7eb;
+        white-space: nowrap;
+    }
+
+    .premium-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #f3f4f6;
+        color: #1f2937;
+        font-size: 0.875rem;
+    }
+
+    .premium-table tr:hover {
+        background: #f9fafb;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        color: #065f46;
+    }
+
+    .table-btn {
+        padding: 0.5rem 0.875rem;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.8rem;
+        border: 1px solid #e5e7eb;
+        color: #374151;
+        background: white;
+        transition: all 0.2s;
+        display: inline-block;
+    }
+
+    .table-btn:hover {
+        border-color: #d1d5db;
+        background: #f9fafb;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .empty-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-text {
+        color: #6b7280;
+        margin-bottom: 1.5rem;
+    }
+
+    /* ========== MOBILE RESPONSIVE ========== */
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .page-header-text h1 {
+            font-size: 1.5rem;
+        }
+
+        .btn-create {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .stat-card {
+            padding: 1rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+        }
+
+        .reminders-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .reminder-card {
+            padding: 1.25rem;
+        }
+
+        .reminder-actions {
+            flex-direction: column;
+        }
+
+        .btn-view, .btn-edit, .btn-complete {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* Table to Card conversion on mobile */
+        .table-wrapper {
+            overflow: visible;
+        }
+
+        .premium-table {
+            display: block;
+        }
+
+        .premium-table thead {
+            display: none;
+        }
+
+        .premium-table tbody {
+            display: block;
+        }
+
+        .premium-table tr {
+            display: block;
+            margin: 0 1rem 1rem 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1rem;
+            background: white;
+        }
+
+        .premium-table td {
+            display: block;
+            padding: 0.5rem 0;
+            border: none;
+            text-align: left;
+        }
+
+        .premium-table td::before {
+            content: attr(data-label);
+            display: block;
+            font-weight: 700;
+            color: #6b7280;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .table-btn {
+            width: 100%;
+            text-align: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .reminder-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="reminders-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-text">
+            <h1>🔔 Reminders</h1>
+            <p>Manage rent reminders and notifications</p>
+        </div>
+        <a href="{% url 'reminders:create' %}" class="btn-create">
+            ➕ Create Reminder
+        </a>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card amber">
+            <div class="stat-label">Active Reminders</div>
+            <div class="stat-value">{{ active_reminders|length }}</div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-label">Completed</div>
+            <div class="stat-value">{{ inactive_reminders|length }}</div>
+        </div>
+        <div class="stat-card blue">
+            <div class="stat-label">Total</div>
+            <div class="stat-value">{{ active_reminders|length|add:inactive_reminders|length }}</div>
+        </div>
+    </div>
+
+    <!-- Active Reminders -->
+    {% if active_reminders %}
+    <h2 class="section-title">⏰ Active Reminders</h2>
+    <div class="reminders-grid">
+        {% for reminder in active_reminders %}
+        <div class="reminder-card">
+            <div class="reminder-header">
+                <h3 class="reminder-title">{{ reminder.title }}</h3>
+                <span class="reminder-badge">🔔 Active</span>
+            </div>
+            <div class="reminder-meta">
+                <div class="reminder-meta-item">
+                    📅 <strong>Date:</strong> {{ reminder.reminder_date|date:"M d, Y" }}
+                </div>
+                <div class="reminder-meta-item">
+                    ⏰ <strong>Time:</strong> {{ reminder.reminder_time|time:"H:i" }}
+                </div>
+                {% if reminder.reminder_property %}
+                <div class="reminder-meta-item">
+                    🏠 <strong>Property:</strong> {{ reminder.reminder_property.name }}
+                </div>
+                {% endif %}
+                <div class="reminder-meta-item">
+                    🔄 <strong>Frequency:</strong> {{ reminder.get_frequency_display }}
+                </div>
+            </div>
+            {% if reminder.description %}
+            <div class="reminder-description">
+                {{ reminder.description|truncatewords:20 }}
+            </div>
+            {% endif %}
+            <div class="reminder-actions">
+                <a href="{% url 'reminders:detail' reminder.pk %}" class="btn-view">👁️ View</a>
+                <a href="{% url 'reminders:update' reminder.pk %}" class="btn-edit">✏️ Edit</a>
+                <form method="post" action="{% url 'reminders:complete' reminder.pk %}" style="display: contents;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-complete">✓ Complete</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">🔔</div>
+        <h3 class="empty-title">No Active Reminders</h3>
+        <p class="empty-text">You're all caught up! Create a new reminder to stay organized.</p>
+        <a href="{% url 'reminders:create' %}" class="btn-create">➕ Create Reminder</a>
+    </div>
+    {% endif %}
+
+    <!-- Inactive/Past Reminders Table -->
+    {% if inactive_reminders %}
+    <div class="table-section">
+        <div class="table-header">
+            <h3 class="table-title">📋 Completed Reminders</h3>
+        </div>
+        <div class="table-wrapper">
+            <table class="premium-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Date</th>
+                        <th>Property</th>
+                        <th>Last Sent</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reminder in inactive_reminders %}
+                    <tr>
+                        <td data-label="Title">{{ reminder.title }}</td>
+                        <td data-label="Date">{{ reminder.reminder_date|date:"M d, Y" }}</td>
+                        <td data-label="Property">{{ reminder.reminder_property.name|default:"-" }}</td>
+                        <td data-label="Last Sent">{{ reminder.last_sent|date:"M d, Y H:i"|default:"-" }}</td>
+                        <td data-label="Actions">
+                            <a href="{% url 'reminders:detail' reminder.pk %}" class="table-btn">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Ensure all links and buttons are clickable
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('a, button').forEach(function(el) {
+        el.style.pointerEvents = 'auto';
+    });
+});
+</script>
+{% endblock %}

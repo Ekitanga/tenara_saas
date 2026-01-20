@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ property.name }} - TENARA{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem; max-width: 1400px; margin: 0 auto;">
+    
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <a href="{% url 'property_list' %}" style="color: #6b7280; text-decoration: none; margin-bottom: 0.5rem; display: inline-block;">
+                ← Back to Properties
+            </a>
+            <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">{{ property.name }}</h1>
+            <p style="color: #6b7280; font-size: 1.125rem;">📍 {{ property.location }}</p>
+        </div>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <a href="{% url 'unit_create' %}?property={{ property.pk }}" class="btn btn-primary" style="background: #2563eb; color: white; padding: 0.75rem 1.5rem; text-decoration: none; border-radius: 8px; font-weight: 600;">
+                + Add Unit
+            </a>
+            <a href="{% url 'property_update' property.pk %}" style="padding: 0.75rem 1.5rem; border: 2px solid #e5e7eb; border-radius: 8px; text-decoration: none; color: #1f2937; font-weight: 600;">
+                Edit Property
+            </a>
+        </div>
+    </div>
+    
+    <!-- Property Stats -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">TOTAL UNITS</div>
+            <div style="font-size: 2rem; font-weight: 800; color: #1f2937;">{{ property.get_total_units }}</div>
+        </div>
+        
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #10b981;">
+            <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">OCCUPIED</div>
+            <div style="font-size: 2rem; font-weight: 800; color: #10b981;">{{ property.get_occupied_units }}</div>
+        </div>
+        
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #f59e0b;">
+            <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">VACANT</div>
+            <div style="font-size: 2rem; font-weight: 800; color: #f59e0b;">{{ property.get_vacant_units }}</div>
+        </div>
+        
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 4px solid #2563eb;">
+            <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">OCCUPANCY RATE</div>
+            <div style="font-size: 2rem; font-weight: 800; color: #2563eb;">{{ property.get_occupancy_rate|floatformat:1 }}%</div>
+        </div>
+    </div>
+    
+    <!-- Description -->
+    {% if property.description %}
+    <div style="background: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <h3 style="font-weight: 700; margin-bottom: 0.5rem;">Description</h3>
+        <p style="color: #4b5563;">{{ property.description }}</p>
+    </div>
+    {% endif %}
+    
+    <!-- Units List -->
+    <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="font-size: 1.5rem; font-weight: 700;">Units</h2>
+            <a href="{% url 'unit_create' %}?property={{ property.pk }}" style="color: #2563eb; text-decoration: none; font-weight: 600;">+ Add Unit</a>
+        </div>
+        
+        {% if units %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Unit</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Type</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Rent</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Water</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Garbage</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Status</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Tenant</th>
+                        <th style="text-align: left; padding: 1rem; font-weight: 600; color: #6b7280;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for unit in units %}
+                    <tr style="border-bottom: 1px solid #f3f4f6;">
+                        <td style="padding: 1rem; font-weight: 600;">{{ unit.unit_number }}</td>
+                        <td style="padding: 1rem;">{{ unit.get_unit_type_display }}</td>
+                        <td style="padding: 1rem; font-weight: 600;">KES {{ unit.monthly_rent|floatformat:0 }}</td>
+                        <td style="padding: 1rem;">
+                            {% if unit.water_billing_type == 'fixed' %}
+                                KES {{ unit.water_fixed_amount|floatformat:0 }}
+                            {% elif unit.water_billing_type == 'metered' %}
+                                Metered
+                            {% else %}
+                                Included
+                            {% endif %}
+                        </td>
+                        <td style="padding: 1rem;">KES {{ unit.garbage_fee|floatformat:0 }}</td>
+                        <td style="padding: 1rem;">
+                            {% if unit.is_occupied %}
+                                <span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">Occupied</span>
+                            {% else %}
+                                <span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">Vacant</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 1rem;">
+                            {% if unit.get_current_tenant %}
+                                {{ unit.get_current_tenant.user.get_full_name }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td style="padding: 1rem;">
+                            <a href="{% url 'unit_update' unit.pk %}" style="color: #2563eb; text-decoration: none; margin-right: 0.5rem;">Edit</a>
+                            {% if not unit.is_occupied %}
+                            <form method="post" action="{% url 'unit_delete' unit.pk %}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this unit?');">
+                                {% csrf_token %}
+                                <button type="submit" style="color: #ef4444; background: none; border: none; cursor: pointer; text-decoration: underline;">Delete</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 3rem; color: #6b7280;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🏠</div>
+            <p style="font-size: 1.125rem; margin-bottom: 1rem;">No units yet</p>
+            <a href="{% url 'unit_create' %}?property={{ property.pk }}" class="btn btn-primary" style="background: #2563eb; color: white; padding: 0.75rem 1.5rem; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">
+                + Add First Unit
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Delete Property Section -->
+    {% if not units %}
+    <div style="margin-top: 3rem; padding: 2rem; background: #fef2f2; border-radius: 12px; border-left: 4px solid #ef4444;">
+        <h3 style="color: #991b1b; font-weight: 700; margin-bottom: 0.5rem;">Danger Zone</h3>
+        <p style="color: #7f1d1d; margin-bottom: 1rem;">Once you delete a property, there is no going back. Please be certain.</p>
+        <form method="post" action="{% url 'property_delete' property.pk %}" onsubmit="return confirm('Are you absolutely sure? This action cannot be undone.');">
+            {% csrf_token %}
+            <button type="submit" style="background: #ef4444; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                Delete Property
+            </button>
+        </form>
+    </div>
+    {% endif %}
+    
+</div>
+{% endblock %}

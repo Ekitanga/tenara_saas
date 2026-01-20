@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Upgrade Subscription - TENARA{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem; max-width: 1200px; margin: 0 auto;">
+    <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem;">Upgrade Your Plan</h1>
+    <p style="color: #6b7280; font-size: 1.125rem; margin-bottom: 2rem;">Choose a plan that fits your growing rental business</p>
+    
+    {% if subscription %}
+    <div style="background: #dbeafe; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border-left: 4px solid #2563eb;">
+        <strong>Current Plan:</strong> {{ subscription.plan.name }} - {{ subscription.plan.max_units }} units - KES {{ subscription.plan.monthly_price|floatformat:0 }}/month
+    </div>
+    {% endif %}
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
+        {% for plan in plans %}
+        <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); {% if subscription and subscription.plan.pk == plan.pk %}border: 2px solid #2563eb;{% endif %}">
+            <h3 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem;">{{ plan.name }}</h3>
+            <div style="margin-bottom: 1.5rem;">
+                <span style="font-size: 2.5rem; font-weight: 800; color: #2563eb;">KES {{ plan.monthly_price|floatformat:0 }}</span>
+                <span style="color: #6b7280;">/month</span>
+            </div>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <div style="font-weight: 700;">Up to {{ plan.max_units }} units</div>
+            </div>
+            
+            {% if subscription and subscription.plan.pk == plan.pk %}
+            <button style="width: 100%; padding: 1rem; background: #e5e7eb; color: #6b7280; border: none; border-radius: 8px; font-weight: 600; cursor: not-allowed;" disabled>
+                Current Plan
+            </button>
+            {% else %}
+            <button onclick="alert('Payment integration coming soon!')" style="width: 100%; padding: 1rem; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                Select Plan
+            </button>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
