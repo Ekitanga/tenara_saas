@@ -271,3 +271,11 @@ def tenant_dashboard(request):
     }
 
     return render(request, 'tenant/portal.html', context)
+
+def healthz(request):
+    from django.db import connection
+    from django.http import JsonResponse
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT 1')
+        cursor.fetchone()
+    return JsonResponse({'status': 'ok'})

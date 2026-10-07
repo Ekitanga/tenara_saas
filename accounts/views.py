@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import views as auth_views
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
 from django.contrib import messages
 from .models import User, LandlordProfile, TenantProfile
+from core.security import throttle
 
 
 class SignupView(View):
@@ -51,6 +53,9 @@ class LoginView(View):
         return render(request, 'accounts/login.html')
 
     def post(self, request):
+        limited = throttle(f'login:{request.META.get("REMOTE_ADDR", "unknown")}', limit=10, window=900)
+        if limited:
+            return limited
         username = request.POST.get('username')
         password = request.POST.get('password')
 
@@ -84,15 +89,12 @@ class LogoutView(View):
         return redirect('demo:home')
 
 
-class PasswordResetView(View):
-    def get(self, request):
-        return render(request, 'accounts/password_reset.html')
-
-    def post(self, request):
-        email = request.POST.get('email')
-        messages.success(request, 'Password reset link sent to your email')
-        return redirect('accounts:login')
-
+class ThrottledPasswordResetView(auth_views.PasswordResetView):
+    def dispatch(self, request, *args, **kwargs):
+        limited = throttle(f'password-reset:{request.META.get("REMOTE_ADDR", "unknown")}', limit=3, window=900)
+        if limited:
+            return limited
+        return super().dispatch(request, *args, **kwargs)
 
 class ProfileView(LoginRequiredMixin, View):
     def get(self, request):

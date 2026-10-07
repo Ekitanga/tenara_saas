@@ -33,3 +33,7 @@ Thumbs.db
 # Backups
 backup*/
 *.backup
+.env.staging
+.env.production
+media/
+staticfiles/

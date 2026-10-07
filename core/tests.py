@@ -1,7 +1,11 @@
 from datetime import date
 from decimal import Decimal
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
+from django.core import mail
+from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import IntegrityError, transaction
 from django.urls import reverse
 
 from accounts.models import LandlordProfile, TenantProfile, User
@@ -15,7 +19,7 @@ from tenants_mgmt.models import Lease
 
 class CoreRentalWorkflowTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username='owner', password='Strong-pass123', role='landlord')
+        self.user = User.objects.create_user(username='owner', email='owner@example.com', password='Strong-pass123', role='landlord')
         self.landlord = LandlordProfile.objects.create(user=self.user, business_name='Sunrise Properties')
         self.other_user = User.objects.create_user(username='other', password='Strong-pass123', role='landlord')
         self.other_landlord = LandlordProfile.objects.create(user=self.other_user, business_name='Other Properties')
@@ -80,3 +84,34 @@ class CoreRentalWorkflowTests(TestCase):
             description='Plumbing', amount=Decimal('1250.55'), expense_date=date(2026, 1, 5)
         )
         self.assertEqual(expense.amount, Decimal('1250.55'))
+
+    def test_health_endpoint_checks_database(self):
+        response = self.client.get(reverse('healthz'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {'status': 'ok'})
+
+    @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+    def test_password_reset_sends_a_real_signed_reset_email(self):
+        response = self.client.post(reverse('accounts:password_reset'), {'email': 'owner@example.com'})
+        self.assertRedirects(response, reverse('accounts:password_reset_done'))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('password-reset/confirm/', mail.outbox[0].body)
+
+    def test_invalid_receipt_extension_is_rejected(self):
+        expense = Expense(
+            landlord=self.landlord, category='repairs', description='Receipt',
+            amount=Decimal('10.00'), expense_date=date(2026, 1, 5),
+            receipt=SimpleUploadedFile('receipt.exe', b'not safe')
+        )
+        with self.assertRaises(ValidationError):
+            expense.full_clean()
+
+    def test_database_prevents_second_active_lease_for_a_unit(self):
+        another_user = User.objects.create_user(username='tenant_b', password='Strong-pass123', role='tenant')
+        another_tenant = TenantProfile.objects.create(user=another_user)
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Lease.objects.create(
+                    unit=self.unit, tenant=another_tenant, start_date=date(2026, 2, 1),
+                    rent_amount=Decimal('15000'), status='active'
+                )

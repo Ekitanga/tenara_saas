@@ -1,4 +1,7 @@
 from django.db import models
+from django.db.models import Q
+from django.core.validators import MinValueValidator
+from decimal import Decimal
 from django.utils import timezone
 from accounts.models import TenantProfile
 from properties.models import Unit
@@ -34,6 +37,7 @@ class Lease(models.Model):
     
     # Lease Terms
     rent_amount = models.DecimalField(
+        validators=[MinValueValidator(Decimal('0.00'))],
         max_digits=10, 
         decimal_places=2,
         help_text='Monthly rent amount (frozen at lease creation)'
@@ -52,6 +56,7 @@ class Lease(models.Model):
     class Meta:
         db_table = 'leases'
         ordering = ['-start_date']
+        constraints = [models.UniqueConstraint(fields=['unit'], condition=Q(status='active'), name='unique_active_lease_per_unit')]
         verbose_name = 'Lease'
         verbose_name_plural = 'Leases'
     
