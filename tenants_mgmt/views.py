@@ -64,24 +64,6 @@ class TenantCreateView(LoginRequiredMixin, View):
 
         landlord = request.landlord
 
-        # Check subscription limit
-        if landlord.subscription:
-            units_limit = landlord.subscription.plan.max_units
-
-            # Count current occupied units
-            occupied_count = Unit.objects.filter(
-                unit_property__landlord=landlord,
-                lease__status='active'
-            ).distinct().count()
-
-            if occupied_count >= units_limit:
-                messages.error(
-                    request,
-                    f'You have reached your plan limit of {units_limit} units. '
-                    'Please upgrade your subscription to add more tenants.'
-                )
-                return redirect('subscriptions:plans')
-
         # Get vacant units for this landlord
         vacant_units = Unit.objects.filter(
             unit_property__landlord=landlord

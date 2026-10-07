@@ -161,6 +161,13 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
+# Product scope flags. Core mode keeps the first release focused on rental operations.
+CORE_PRODUCT_MODE = config('CORE_PRODUCT_MODE', default=True, cast=bool)
+ENABLE_SUBSCRIPTIONS = config('ENABLE_SUBSCRIPTIONS', default=False, cast=bool)
+ENABLE_REMINDERS = config('ENABLE_REMINDERS', default=False, cast=bool)
+ENABLE_MPESA = config('ENABLE_MPESA', default=False, cast=bool)
+ENABLE_SMS = config('ENABLE_SMS', default=False, cast=bool)
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 

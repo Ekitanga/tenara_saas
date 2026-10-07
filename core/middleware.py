@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.utils.deprecation import MiddlewareMixin
 from django.shortcuts import redirect
 
@@ -46,6 +47,8 @@ class TenantMiddleware(MiddlewareMixin):
                 # Create profile if doesn't exist
                 request.landlord = LandlordProfile.objects.create(user=request.user)
 
+            if settings.CORE_PRODUCT_MODE:
+                return None
             # Exempt certain paths from subscription checks
             exempt_paths = [
                 '/admin/',

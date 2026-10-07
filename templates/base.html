@@ -195,10 +195,8 @@
                 <li><a href="{% url 'invoicing:list' %}" class="{% if 'invoices' in request.path %}active{% endif %}"><span class="nav-icon">📄</span> Invoices</a></li>
                 <li><a href="{% url 'payments:payment_list' %}" class="{% if 'payments' in request.path %}active{% endif %}"><span class="nav-icon">💳</span> Payments</a></li>
                 <li><a href="{% url 'expenses:list' %}" class="{% if 'expenses' in request.path %}active{% endif %}"><span class="nav-icon">💸</span> Expenses</a></li>
-                <li><a href="{% url 'reminders:list' %}" class="{% if 'reminders' in request.path %}active{% endif %}"><span class="nav-icon">🔔</span> Reminders</a></li>
                 <li><a href="{% url 'reports:dashboard' %}" class="{% if 'reports' in request.path %}active{% endif %}"><span class="nav-icon">📈</span> Reports</a></li>
                 <div class="sidebar-section">
-                    <li><a href="{% url 'subscriptions:plans' %}"><span class="nav-icon">⭐</span> Subscription</a></li>
                     <li><a href="{% url 'accounts:profile' %}"><span class="nav-icon">👤</span> Profile</a></li>
                     <li><a href="{% url 'accounts:logout' %}"><span class="nav-icon">🚪</span> Logout</a></li>
                 </div>

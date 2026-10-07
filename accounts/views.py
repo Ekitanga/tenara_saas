@@ -4,15 +4,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
 from django.contrib import messages
 from .models import User, LandlordProfile, TenantProfile
-from subscriptions.models import SubscriptionPlan, Subscription
-from django.utils import timezone
-from datetime import timedelta
 
 
 class SignupView(View):
     def get(self, request):
-        plans = SubscriptionPlan.objects.filter(is_active=True)
-        return render(request, 'accounts/signup.html', {'plans': plans})
+        return render(request, 'accounts/signup.html')
 
     def post(self, request):
         username = request.POST.get('username')
@@ -21,7 +17,6 @@ class SignupView(View):
         password2 = request.POST.get('password2')
         phone_number = request.POST.get('phone_number')
         business_name = request.POST.get('business_name')
-        plan_id = request.POST.get('plan', 1)
 
         if password != password2:
             messages.error(request, 'Passwords do not match')
@@ -44,20 +39,8 @@ class SignupView(View):
             business_name=business_name
         )
 
-        plan = SubscriptionPlan.objects.get(pk=plan_id)
-        subscription = Subscription.objects.create(
-            landlord=landlord_profile,
-            plan=plan,
-            status='trial',
-            start_date=timezone.now().date(),
-            end_date=timezone.now().date() + timedelta(days=14)
-        )
-
-        landlord_profile.subscription = subscription
-        landlord_profile.save()
-
         login(request, user)
-        messages.success(request, f'Welcome to TENARA! Your 14-day trial has started.')
+        messages.success(request, 'Welcome to TENARA! Your rental workspace is ready.')
         return redirect('dashboard')
 
 

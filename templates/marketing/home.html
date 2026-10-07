@@ -685,7 +685,6 @@
         <div class="navbar-content">
             <a href="/" class="navbar-brand">TENARA</a>
             <div class="navbar-links">
-                <a href="{% url 'demo:view' %}" class="nav-demo-link">Live Demo</a>
                 <a href="{% url 'accounts:login' %}" class="nav-btn nav-btn-secondary">Login</a>
                 <a href="{% url 'accounts:signup' %}" class="nav-btn nav-btn-primary">Sign Up</a>
             </div>
@@ -706,10 +705,7 @@
                     <span>Start Free Trial</span>
                     <span class="btn-icon">→</span>
                 </a>
-                <a href="{% url 'demo:view' %}" class="btn btn-secondary">
-                    <span class="btn-icon">▶</span>
-                    <span>Try Live Demo</span>
-                </a>
+
             </div>
         </div>
     </section>
@@ -743,9 +739,9 @@
                 </div>
 
                 <div class="feature-card">
-                    <div class="feature-icon">📱</div>
-                    <h3>M-Pesa Integration</h3>
-                    <p>Accept payments via M-Pesa with automatic receipt generation and SMS notifications.</p>
+                    <div class="feature-icon">💳</div>
+                    <h3>Payment Tracking</h3>
+                    <p>Record rent payments, track balances, and keep a clear history for every invoice.</p>
                 </div>
 
                 <div class="feature-card">
@@ -755,9 +751,9 @@
                 </div>
 
                 <div class="feature-card">
-                    <div class="feature-icon">⏰</div>
-                    <h3>Smart Reminders</h3>
-                    <p>Never miss important dates with automated reminders for rent, maintenance, and renewals.</p>
+                    <div class="feature-icon">🧾</div>
+                    <h3>Simple Expenses</h3>
+                    <p>Record property expenses and see how they affect your rental business performance.</p>
                 </div>
             </div>
         </div>
@@ -789,16 +785,13 @@
     <section class="pricing">
         <div class="container">
             <h2>Ready to Get Started?</h2>
-            <p class="pricing-subtitle">Start your 14-day free trial. No credit card required.</p>
+            <p class="pricing-subtitle">Start with the core tools you need to run your rental business.</p>
             <div class="cta-buttons cta-buttons-dark">
                 <a href="{% url 'accounts:signup' %}" class="btn btn-primary">
                     <span>Start Free Trial</span>
                     <span class="btn-icon">→</span>
                 </a>
-                <a href="{% url 'demo:view' %}" class="btn btn-secondary">
-                    <span class="btn-icon">▶</span>
-                    <span>Watch Demo</span>
-                </a>
+
             </div>
         </div>
     </section>

@@ -286,18 +286,6 @@ class UnitCreateView(LoginRequiredMixin, View):
             messages.error(request, 'Access denied.')
             return redirect('demo:home')
         
-        # Check unit limit
-        current_units = Unit.objects.filter(unit_property__landlord=request.landlord).count()
-        
-        if request.landlord.subscription:
-            max_units = request.landlord.subscription.plan.max_units
-            if current_units >= max_units:
-                messages.error(request, f'Unit limit reached ({max_units} units). Please upgrade your plan.')
-                return redirect('subscriptions:plans')
-        else:
-            messages.error(request, 'No active subscription. Please subscribe to a plan.')
-            return redirect('subscriptions:plans')
-        
         # Get form data
         property_id = request.POST.get('property')
         unit_number = request.POST.get('unit_number')
