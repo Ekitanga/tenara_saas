@@ -78,7 +78,7 @@ class LoginView(View):
 
 
 class LogoutView(View):
-    def get(self, request):
+    def post(self, request):
         logout(request)
         messages.success(request, 'You have been logged out')
         return redirect('demo:home')
@@ -96,22 +96,12 @@ class PasswordResetView(View):
 
 class ProfileView(LoginRequiredMixin, View):
     def get(self, request):
-        return render(request, 'accounts/profile.html')
+        return render(request, 'accounts/profile.html', {'landlord_profile': getattr(request, 'landlord', None)})
 
     def post(self, request):
         if request.user.is_landlord:
             profile = request.landlord
             profile.business_name = request.POST.get('business_name', '')
-            profile.mpesa_consumer_key = request.POST.get('mpesa_consumer_key', '')
-            profile.mpesa_consumer_secret = request.POST.get('mpesa_consumer_secret', '')
-            profile.mpesa_shortcode = request.POST.get('mpesa_shortcode', '')
-            profile.mpesa_passkey = request.POST.get('mpesa_passkey', '')
-            profile.bonga_api_key = request.POST.get('bonga_api_key', '')
-            profile.bonga_sender_id = request.POST.get('bonga_sender_id', 'TENARA')
-            profile.smtp_host = request.POST.get('smtp_host', '')
-            profile.smtp_port = request.POST.get('smtp_port', 587)
-            profile.smtp_username = request.POST.get('smtp_username', '')
-            profile.smtp_password = request.POST.get('smtp_password', '')
             profile.save()
             messages.success(request, 'Profile updated successfully')
 

@@ -67,7 +67,7 @@ class Lease(models.Model):
     @property
     def landlord(self):
         """Get landlord from unit's property"""
-        return self.unit.property.landlord
+        return self.unit.unit_property.landlord
     
     @property
     def is_active(self):

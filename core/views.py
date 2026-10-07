@@ -156,8 +156,32 @@ def landlord_dashboard(request):
         due_date__lte=date.today() + timedelta(days=7)
     ).count()
 
+    onboarding = [
+        {
+            'label': 'Add your first property',
+            'done': total_properties > 0,
+            'url': 'property_create',
+        },
+        {
+            'label': 'Add a unit',
+            'done': total_units > 0,
+            'url': 'unit_create',
+        },
+        {
+            'label': 'Add your first tenant',
+            'done': occupied_units > 0,
+            'url': 'tenants:create',
+        },
+        {
+            'label': 'Create an invoice',
+            'done': recent_invoices.exists(),
+            'url': 'invoicing:create',
+        },
+    ]
     context = {
         'page_title': 'Dashboard',
+        'onboarding': onboarding,
+        'onboarding_complete': all(item['done'] for item in onboarding),
         'subscription': subscription,
         'days_remaining': days_remaining,
         'is_trial': is_trial,

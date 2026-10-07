@@ -3,6 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
 from django.contrib import messages
 from django.utils import timezone
+from decimal import Decimal, InvalidOperation
 from django.db import transaction
 from .models import Expense
 from properties.models import Property
@@ -33,7 +34,7 @@ class ExpenseListView(LoginRequiredMixin, View):
         if property_filter != 'all':
             try:
                 expenses = expenses.filter(expense_property_id=property_filter)
-            except ValueError:
+            except (ValueError, InvalidOperation, TypeError):
                 pass
         
         if month_filter:
@@ -43,7 +44,7 @@ class ExpenseListView(LoginRequiredMixin, View):
                     expense_date__year=filter_date.year,
                     expense_date__month=filter_date.month
                 )
-            except ValueError:
+            except (ValueError, InvalidOperation, TypeError):
                 pass
         
         # Calculate summary statistics
@@ -111,10 +112,10 @@ class ExpenseCreateView(LoginRequiredMixin, View):
         
         # Validate amount
         try:
-            amount = float(amount)
+            amount = Decimal(str(amount))
             if amount <= 0:
                 raise ValueError('Amount must be positive')
-        except ValueError:
+        except (ValueError, InvalidOperation, TypeError):
             messages.error(request, 'Invalid amount.')
             return redirect('expenses:create')
         
@@ -216,10 +217,10 @@ class ExpenseUpdateView(LoginRequiredMixin, View):
         
         # Validate amount
         try:
-            amount = float(amount)
+            amount = Decimal(str(amount))
             if amount <= 0:
                 raise ValueError('Amount must be positive')
-        except ValueError:
+        except (ValueError, InvalidOperation, TypeError):
             messages.error(request, 'Invalid amount.')
             return redirect('expenses:update', pk=pk)
         

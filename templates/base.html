@@ -198,14 +198,14 @@
                 <li><a href="{% url 'reports:dashboard' %}" class="{% if 'reports' in request.path %}active{% endif %}"><span class="nav-icon">📈</span> Reports</a></li>
                 <div class="sidebar-section">
                     <li><a href="{% url 'accounts:profile' %}"><span class="nav-icon">👤</span> Profile</a></li>
-                    <li><a href="{% url 'accounts:logout' %}"><span class="nav-icon">🚪</span> Logout</a></li>
+                    <li><form method="post" action="{% url 'accounts:logout' %}" style="margin: 0;">{% csrf_token %}<button type="submit" style="background:none;border:0;color:inherit;font:inherit;cursor:pointer;padding:0.75rem 1rem;width:100%;text-align:left;"><span class="nav-icon">🚪</span> Logout</button></form></li>
                 </div>
                 {% elif user.is_tenant %}
                 <li><a href="{% url 'tenants:portal' %}" class="active"><span class="nav-icon">🏠</span> My Unit</a></li>
                 <li><a href="{% url 'tenants:portal' %}"><span class="nav-icon">📄</span> My Invoices</a></li>
                 <div class="sidebar-section">
                     <li><a href="{% url 'accounts:profile' %}"><span class="nav-icon">👤</span> Profile</a></li>
-                    <li><a href="{% url 'accounts:logout' %}"><span class="nav-icon">🚪</span> Logout</a></li>
+                    <li><form method="post" action="{% url 'accounts:logout' %}" style="margin: 0;">{% csrf_token %}<button type="submit" style="background:none;border:0;color:inherit;font:inherit;cursor:pointer;padding:0.75rem 1rem;width:100%;text-align:left;"><span class="nav-icon">🚪</span> Logout</button></form></li>
                 </div>
                 {% endif %}
                 {% endif %}
