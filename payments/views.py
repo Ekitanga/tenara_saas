@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, FileResponse
 from decimal import Decimal, InvalidOperation
 from .models import Payment
 from .services import confirm_payment
@@ -224,16 +224,6 @@ class InitiateMpesaPaymentView(View):
             elif not phone_number.startswith('254'):
                 phone_number = '254' + phone_number
 
-            # Create pending payment record
-            payment = Payment.objects.create(
-                invoice=invoice,
-                amount=amount,
-                payment_method='mpesa',
-                phone_number=phone_number,
-                status='pending',
-                transaction_id=f'PENDING-{timezone.now().strftime("%Y%m%d%H%M%S")}'
-            )
-
             return JsonResponse({'success': False, 'message': 'M-Pesa provider integration is not configured.'}, status=503)
 
         except Exception as e:
@@ -389,3 +379,12 @@ class DeletePaymentView(LoginRequiredMixin, View):
 
         messages.success(request, 'Payment record deleted successfully!')
         return redirect('invoicing:detail', pk=invoice_pk)
+
+class PaymentProofView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        if not request.user.is_landlord:
+            return redirect('demo:home')
+        payment = get_object_or_404(Payment, pk=pk, invoice__lease__unit__unit_property__landlord=request.landlord)
+        if not payment.payment_proof:
+            return redirect('payments:payment_list')
+        return FileResponse(payment.payment_proof.open('rb'), as_attachment=False, filename=payment.payment_proof.name.rsplit('/', 1)[-1])

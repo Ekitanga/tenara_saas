@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth import views as auth_views
+from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
 from django.contrib import messages
@@ -20,8 +21,16 @@ class SignupView(View):
         phone_number = request.POST.get('phone_number')
         business_name = request.POST.get('business_name')
 
+        if not email or not phone_number:
+            messages.error(request, 'Email and phone number are required.')
+            return redirect('accounts:signup')
         if password != password2:
             messages.error(request, 'Passwords do not match')
+            return redirect('accounts:signup')
+        try:
+            validate_password(password)
+        except Exception as exc:
+            messages.error(request, ' '.join(exc.messages))
             return redirect('accounts:signup')
 
         if User.objects.filter(username=username).exists():

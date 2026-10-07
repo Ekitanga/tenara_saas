@@ -476,7 +476,7 @@
                     {% if expense and expense.receipt %}
                     <div class="current-file">
                         <span>📄</span>
-                        Current file: <a href="{{ expense.receipt.url }}" target="_blank">View existing receipt</a>
+                        Current file: <a href="{% url 'expenses:receipt' expense.pk %}" target="_blank">View existing receipt</a>
                     </div>
                     {% endif %}
                 </div>

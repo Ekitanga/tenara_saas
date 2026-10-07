@@ -25,9 +25,9 @@ This repository now contains the implementation and automation that can be safel
 - Set `DEBUG=False`, a strong `SECRET_KEY`, exact `ALLOWED_HOSTS`, and `CSRF_TRUSTED_ORIGINS`.
 - Provision PostgreSQL, Redis, SMTP, object/private media storage, backups, and monitoring.
 - Run `docker compose -f docker-compose.staging.yml up --build` with real staging secrets.
-- Run `python manage.py check --deploy`, migrations, CI, and browser UAT in staging.
+- Run `python manage.py check --deploy`, migrations, CI, and browser UAT in staging. The repository tests are the automated gate; browser UAT must be run against the deployed staging URL.
 - Verify password-reset delivery and account recovery with a real email inbox.
 - Configure private media storage and signed download URLs if receipts contain personal data.
-- Add error tracking/alert routing and verify restore-from-backup procedures.
+- Add error tracking/alert routing and verify restore-from-backup procedures. The `/healthz/` endpoint is the liveness check; connect it to the hosting provider monitor.
 - Perform a dependency and penetration review before public launch.
 - Obtain explicit provider credentials and acceptance tests before enabling M-Pesa, SMS, reminders, or billing.

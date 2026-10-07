@@ -115,3 +115,23 @@ class CoreRentalWorkflowTests(TestCase):
                     unit=self.unit, tenant=another_tenant, start_date=date(2026, 2, 1),
                     rent_amount=Decimal('15000'), status='active'
                 )
+
+    def test_receipt_download_is_limited_to_own_landlord(self):
+        expense = Expense.objects.create(
+            landlord=self.landlord, category='repairs', description='Receipt',
+            amount=Decimal('10.00'), expense_date=date(2026, 1, 5),
+            receipt=SimpleUploadedFile('receipt.pdf', b'%PDF-1.4 test')
+        )
+        self.client.force_login(self.user)
+        self.assertEqual(self.client.get(reverse('expenses:receipt', args=[expense.pk])).status_code, 200)
+        self.client.force_login(self.other_user)
+        self.assertEqual(self.client.get(reverse('expenses:receipt', args=[expense.pk])).status_code, 404)
+
+    def test_signup_rejects_weak_password(self):
+        response = self.client.post(reverse('accounts:signup'), {
+            'business_name': 'Test Business', 'username': 'new-owner',
+            'email': 'new@example.com', 'phone_number': '0712345678',
+            'password': 'password', 'password2': 'password',
+        })
+        self.assertRedirects(response, reverse('accounts:signup'))
+        self.assertFalse(User.objects.filter(username='new-owner').exists())

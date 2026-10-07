@@ -787,7 +787,7 @@
                     <td data-label="Actions">
                         <div class="action-links">
                             {% if payment.payment_proof %}
-                            <a href="{{ payment.payment_proof.url }}" target="_blank" class="action-link">View Proof</a>
+                            <a href="{% url 'payments:proof' payment.pk %}" target="_blank" class="action-link">View Proof</a>
                             {% endif %}
                             {% if payment.status == 'pending' %}
                             <form method="post" action="{% url 'payments:confirm' payment.pk %}" class="confirm-form">

@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.utils import timezone
 from decimal import Decimal, InvalidOperation
 from django.db import transaction
+from django.http import FileResponse
 from .models import Expense
 from properties.models import Property
 
@@ -273,3 +274,12 @@ class ExpenseDeleteView(LoginRequiredMixin, View):
         
         messages.success(request, f'{category} expense of KES {amount:,.2f} deleted successfully!')
         return redirect('expenses:list')
+
+class ExpenseReceiptView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        if not request.user.is_landlord:
+            return redirect('demo:home')
+        expense = get_object_or_404(Expense, pk=pk, landlord=request.landlord)
+        if not expense.receipt:
+            return redirect('expenses:detail', pk=pk)
+        return FileResponse(expense.receipt.open('rb'), as_attachment=False, filename=expense.receipt.name.rsplit('/', 1)[-1])
