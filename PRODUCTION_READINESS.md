@@ -14,7 +14,7 @@ This repository now contains the implementation and automation that can be safel
 8. **Authorization:** core ownership-isolation tests cover cross-landlord invoice access.
 9. **Money integrity:** Decimal handling, positive amount validators, database constraints, idempotent payment confirmation, and audit events are implemented.
 10. **Health/monitoring foundation:** `/healthz/`, structured console/file logging, Docker healthcheck, and CI are present.
-11. **Rate limiting:** login and password-reset attempts are cache-throttled.
+11. **Rate limiting:** login and password-reset attempts are cache-throttled; production uses shared Redis when `REDIS_URL` is configured.
 12. **Uploads:** receipts and payment proofs are limited to 5 MB and PDF/JPG/JPEG/PNG extensions.
 13. **Lease lifecycle:** only one active lease per unit is enforced at the database level.
 14. **Performance:** dashboard and expense lists use bounded querysets and related-object loading; production profiling remains required.
@@ -25,7 +25,7 @@ This repository now contains the implementation and automation that can be safel
 ## Required before production approval
 
 - Set `DEBUG=False`, a strong `SECRET_KEY`, exact `ALLOWED_HOSTS`, and `CSRF_TRUSTED_ORIGINS`. Prefer `DATABASE_URL` on managed hosts.
-- Provision PostgreSQL, Redis, SMTP, object/private media storage, backups, and monitoring.
+- Provision PostgreSQL, Redis, SMTP, object/private media storage, backups, and monitoring. Redis is required for reliable shared rate limiting when more than one web instance runs.
 - Run `docker compose -f docker-compose.staging.yml up --build` with real staging secrets.
 - Run `python manage.py check --deploy`, migrations, CI, and browser UAT in staging. The repository tests are the automated gate; browser UAT must be run against the deployed staging URL.
 - Verify password-reset delivery and account recovery with a real email inbox.
