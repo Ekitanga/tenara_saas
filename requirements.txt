@@ -1,7 +1,8 @@
-Django==4.2.7
+Django==5.2.18
 djangorestframework==3.14.0
 psycopg[binary]>=3.2.10
 python-decouple==3.8
+dj-database-url==2.3.0
 Pillow>=12.0
 requests==2.31.0
 django-cors-headers==4.3.1

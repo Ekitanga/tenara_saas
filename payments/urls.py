@@ -8,4 +8,5 @@ urlpatterns = [
     path('record/', views.RecordManualPaymentView.as_view(), name='record_manual'),
     path('mpesa/initiate/', views.InitiateMpesaPaymentView.as_view(), name='mpesa_initiate'),
     path('mpesa/callback/', views.MpesaCallbackView.as_view(), name='mpesa_callback'),
+    path('<int:pk>/proof/', views.PaymentProofView.as_view(), name='proof'),
 ]

@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
 from django.contrib import messages
+from django.contrib.auth.forms import PasswordResetForm
+import logging
 from django.utils import timezone
 from django.db import transaction
 from .models import Lease
@@ -10,6 +12,7 @@ from properties.models import Unit
 from invoicing.models import Invoice
 import random
 import string
+logger = logging.getLogger(__name__)
 
 
 class TenantListView(LoginRequiredMixin, View):
@@ -64,24 +67,6 @@ class TenantCreateView(LoginRequiredMixin, View):
 
         landlord = request.landlord
 
-        # Check subscription limit
-        if landlord.subscription:
-            units_limit = landlord.subscription.plan.max_units
-
-            # Count current occupied units
-            occupied_count = Unit.objects.filter(
-                unit_property__landlord=landlord,
-                lease__status='active'
-            ).distinct().count()
-
-            if occupied_count >= units_limit:
-                messages.error(
-                    request,
-                    f'You have reached your plan limit of {units_limit} units. '
-                    'Please upgrade your subscription to add more tenants.'
-                )
-                return redirect('subscriptions:plans')
-
         # Get vacant units for this landlord
         vacant_units = Unit.objects.filter(
             unit_property__landlord=landlord
@@ -123,7 +108,7 @@ class TenantCreateView(LoginRequiredMixin, View):
         deposit_paid = request.POST.get('deposit_paid') == 'on'
 
         # Validate required fields
-        if not all([first_name, last_name, phone_number, unit_id, start_date]):
+        if not all([first_name, last_name, email, phone_number, unit_id, start_date]):
             messages.error(request, 'Please fill all required fields.')
             return redirect('tenants:create')
 
@@ -156,20 +141,20 @@ class TenantCreateView(LoginRequiredMixin, View):
             return redirect('tenants:create')
 
         try:
-            # Generate a random but secure password
-            password = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
-
+            # Do not display or store a temporary password. Invite the tenant to set one.
             # Create tenant user account
             tenant_user = User.objects.create_user(
                 username=username,
                 email=email if email else f"{username}@tenara.local",
-                password=password,
+                password='unused-temporary-value',
                 first_name=first_name,
                 last_name=last_name,
                 phone_number=phone_number,
                 role='tenant'
             )
 
+            tenant_user.set_unusable_password()
+            tenant_user.save(update_fields=['password'])
             # Create tenant profile
             tenant_profile = TenantProfile.objects.create(
                 user=tenant_user,
@@ -191,19 +176,22 @@ class TenantCreateView(LoginRequiredMixin, View):
                 move_in_date=start_date
             )
 
+            PasswordResetForm({'email': email}).save(
+                request=request, use_https=request.is_secure(),
+                email_template_name='accounts/password_reset_email.txt',
+                subject_template_name='accounts/password_reset_subject.txt',
+                from_email=None, html_email_template_name=None,
+            )
             messages.success(
                 request,
-                f'Tenant "{first_name} {last_name}" added successfully! '
-                f'Login credentials - Username: {username} | Password: {password} '
-                '(Please share these credentials securely with the tenant)'
+                f'Tenant "{first_name} {last_name}" added successfully. '
+                'A password setup link has been sent to the tenant email address.'
             )
             return redirect('tenants:detail', pk=lease.pk)
 
-        except Exception as e:
-            messages.error(request, f'Error creating tenant: {str(e)}')
-            print(f"Tenant creation error: {e}")
-            import traceback
-            traceback.print_exc()
+        except Exception:
+            logger.exception('Tenant creation failed for landlord %s', request.landlord.pk)
+            messages.error(request, 'Unable to create the tenant. Please check the form and try again.')
             return redirect('tenants:create')
 
 

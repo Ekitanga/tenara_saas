@@ -1,18 +1,17 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import views as auth_views
+from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
 from django.contrib import messages
 from .models import User, LandlordProfile, TenantProfile
-from subscriptions.models import SubscriptionPlan, Subscription
-from django.utils import timezone
-from datetime import timedelta
+from core.security import throttle
 
 
 class SignupView(View):
     def get(self, request):
-        plans = SubscriptionPlan.objects.filter(is_active=True)
-        return render(request, 'accounts/signup.html', {'plans': plans})
+        return render(request, 'accounts/signup.html')
 
     def post(self, request):
         username = request.POST.get('username')
@@ -21,10 +20,17 @@ class SignupView(View):
         password2 = request.POST.get('password2')
         phone_number = request.POST.get('phone_number')
         business_name = request.POST.get('business_name')
-        plan_id = request.POST.get('plan', 1)
 
+        if not email or not phone_number:
+            messages.error(request, 'Email and phone number are required.')
+            return redirect('accounts:signup')
         if password != password2:
             messages.error(request, 'Passwords do not match')
+            return redirect('accounts:signup')
+        try:
+            validate_password(password)
+        except Exception as exc:
+            messages.error(request, ' '.join(exc.messages))
             return redirect('accounts:signup')
 
         if User.objects.filter(username=username).exists():
@@ -44,20 +50,8 @@ class SignupView(View):
             business_name=business_name
         )
 
-        plan = SubscriptionPlan.objects.get(pk=plan_id)
-        subscription = Subscription.objects.create(
-            landlord=landlord_profile,
-            plan=plan,
-            status='trial',
-            start_date=timezone.now().date(),
-            end_date=timezone.now().date() + timedelta(days=14)
-        )
-
-        landlord_profile.subscription = subscription
-        landlord_profile.save()
-
         login(request, user)
-        messages.success(request, f'Welcome to TENARA! Your 14-day trial has started.')
+        messages.success(request, 'Welcome to TENARA! Your rental workspace is ready.')
         return redirect('dashboard')
 
 
@@ -68,6 +62,9 @@ class LoginView(View):
         return render(request, 'accounts/login.html')
 
     def post(self, request):
+        limited = throttle(f'login:{request.META.get("REMOTE_ADDR", "unknown")}', limit=10, window=900)
+        if limited:
+            return limited
         username = request.POST.get('username')
         password = request.POST.get('password')
 
@@ -95,40 +92,27 @@ class LoginView(View):
 
 
 class LogoutView(View):
-    def get(self, request):
+    def post(self, request):
         logout(request)
         messages.success(request, 'You have been logged out')
         return redirect('demo:home')
 
 
-class PasswordResetView(View):
-    def get(self, request):
-        return render(request, 'accounts/password_reset.html')
-
-    def post(self, request):
-        email = request.POST.get('email')
-        messages.success(request, 'Password reset link sent to your email')
-        return redirect('accounts:login')
-
+class ThrottledPasswordResetView(auth_views.PasswordResetView):
+    def dispatch(self, request, *args, **kwargs):
+        limited = throttle(f'password-reset:{request.META.get("REMOTE_ADDR", "unknown")}', limit=3, window=900)
+        if limited:
+            return limited
+        return super().dispatch(request, *args, **kwargs)
 
 class ProfileView(LoginRequiredMixin, View):
     def get(self, request):
-        return render(request, 'accounts/profile.html')
+        return render(request, 'accounts/profile.html', {'landlord_profile': getattr(request, 'landlord', None)})
 
     def post(self, request):
         if request.user.is_landlord:
             profile = request.landlord
             profile.business_name = request.POST.get('business_name', '')
-            profile.mpesa_consumer_key = request.POST.get('mpesa_consumer_key', '')
-            profile.mpesa_consumer_secret = request.POST.get('mpesa_consumer_secret', '')
-            profile.mpesa_shortcode = request.POST.get('mpesa_shortcode', '')
-            profile.mpesa_passkey = request.POST.get('mpesa_passkey', '')
-            profile.bonga_api_key = request.POST.get('bonga_api_key', '')
-            profile.bonga_sender_id = request.POST.get('bonga_sender_id', 'TENARA')
-            profile.smtp_host = request.POST.get('smtp_host', '')
-            profile.smtp_port = request.POST.get('smtp_port', 587)
-            profile.smtp_username = request.POST.get('smtp_username', '')
-            profile.smtp_password = request.POST.get('smtp_password', '')
             profile.save()
             messages.success(request, 'Profile updated successfully')
 

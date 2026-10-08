@@ -1,6 +1,14 @@
+from django.conf import settings
 def subscription_context(request):
     """Add subscription info to all templates"""
     context = {
+        'product_features': {
+            'core_mode': settings.CORE_PRODUCT_MODE,
+            'subscriptions': settings.ENABLE_SUBSCRIPTIONS,
+            'reminders': settings.ENABLE_REMINDERS,
+            'mpesa': settings.ENABLE_MPESA,
+            'sms': settings.ENABLE_SMS,
+        },
         'subscription': None,
         'subscription_status': None,
         'is_trial': False,

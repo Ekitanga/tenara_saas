@@ -1,4 +1,7 @@
 from django.db import models
+from django.db.models import Q
+from django.core.validators import MinValueValidator
+from core.validators import validate_supporting_file
 from django.utils import timezone
 from decimal import Decimal
 from invoicing.models import Invoice
@@ -24,7 +27,7 @@ class Payment(models.Model):
     ]
 
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='payments')
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
 
     # M-Pesa Fields
@@ -47,6 +50,7 @@ class Payment(models.Model):
     )
     payment_proof = models.FileField(
         upload_to='payment_proofs/',
+        validators=[validate_supporting_file],
         null=True,
         blank=True,
         help_text='Upload payment proof (receipt, screenshot, etc.)'
@@ -64,6 +68,7 @@ class Payment(models.Model):
     class Meta:
         db_table = 'payments'
         ordering = ['-payment_date']
+        constraints = [models.CheckConstraint(check=Q(amount__gt=0), name='payment_amount_positive')]
         verbose_name = 'Payment'
         verbose_name_plural = 'Payments'
 
@@ -73,23 +78,15 @@ class Payment(models.Model):
         return f"Payment {self.id} - KES {self.amount} ({method}){manual_flag}"
 
     def save(self, *args, **kwargs):
-        """Update invoice when payment is confirmed"""
-        is_new = self.pk is None
-        old_status = None
-
-        if not is_new:
-            old_payment = Payment.objects.get(pk=self.pk)
-            old_status = old_payment.status
-
+        # Invoice accounting is handled by payments.services.confirm_payment.
+        # Keeping it out of save() prevents duplicate balance updates from admin,
+        # callbacks, and ordinary model saves.
+        if self.pk:
+            previous = Payment.objects.get(pk=self.pk)
+            if previous.status == 'confirmed' and self.status != 'confirmed':
+                from django.core.exceptions import ValidationError
+                raise ValidationError('Confirmed payments cannot be reversed.')
         super().save(*args, **kwargs)
-
-        # If payment just got confirmed, update invoice
-        if self.status == 'confirmed' and old_status != 'confirmed':
-            # Ensure both values are Decimal to avoid type errors
-            current_paid = Decimal(str(self.invoice.amount_paid or 0))
-            payment_amount = Decimal(str(self.amount or 0))
-            self.invoice.amount_paid = current_paid + payment_amount
-            self.invoice.save()
 
     @property
     def landlord(self):
@@ -112,14 +109,26 @@ class Payment(models.Model):
         return self.payment_method == 'mpesa'
 
     def confirm_payment(self):
-        """Mark payment as confirmed"""
-        if self.status != 'confirmed':
-            self.status = 'confirmed'
-            self.confirmed_at = timezone.now()
-            self.save()
+        """Confirm and account for this payment exactly once."""
+        from .services import confirm_payment
+        return confirm_payment(self)
 
     def fail_payment(self):
         """Mark payment as failed"""
         if self.status != 'failed':
             self.status = 'failed'
             self.save()
+
+
+class PaymentAudit(models.Model):
+    payment = models.ForeignKey(Payment, on_delete=models.CASCADE, related_name='audit_events')
+    action = models.CharField(max_length=50)
+    status = models.CharField(max_length=20)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
+    actor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='payment_audit_events')
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        db_table = 'payment_audit_events'

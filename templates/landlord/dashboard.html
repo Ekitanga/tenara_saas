@@ -367,35 +367,6 @@
 }
 </style>
 
-<!-- Subscription Alert -->
-{% if subscription_status == 'none' %}
-<div class="alert-banner" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b;">
-    <div>
-        <strong style="color: #92400e; display: flex; align-items: center; gap: 0.5rem; font-size: 1.125rem;">
-            <span style="font-size: 1.5rem;">⚠️</span>
-            No Active Subscription
-        </strong>
-        <p style="color: #78350f; margin: 0.5rem 0 0 0; font-size: 0.95rem;">Choose a plan to unlock all features and get started with TENARA.</p>
-    </div>
-    <a href="{% url 'subscriptions:plans' %}" style="background: #f59e0b; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; white-space: nowrap; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);">
-        Choose a Plan →
-    </a>
-</div>
-{% elif is_trial %}
-<div class="alert-banner" style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-left: 4px solid #2563eb;">
-    <div>
-        <strong style="color: #1e40af; display: flex; align-items: center; gap: 0.5rem; font-size: 1.125rem;">
-            <span style="font-size: 1.5rem;">🎉</span>
-            Free Trial Active - {{ days_remaining }} Days Remaining
-        </strong>
-        <p style="color: #1e3a8a; margin: 0.5rem 0 0 0; font-size: 0.95rem;">Upgrade now to continue enjoying TENARA after your trial ends.</p>
-    </div>
-    <a href="{% url 'subscriptions:plans' %}" style="background: #2563eb; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; white-space: nowrap; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);">
-        Upgrade Now →
-    </a>
-</div>
-{% endif %}
-
 <!-- Welcome Section -->
 <div style="margin-bottom: 2.5rem;">
     <h1 style="font-size: 2.25rem; font-weight: 800; margin-bottom: 0.5rem; color: #111827;">
@@ -403,6 +374,19 @@
     </h1>
     <p style="color: #6b7280; font-size: 1.125rem;">Here's your rental portfolio overview.</p>
 </div>
+{% if not onboarding_complete %}
+<div class="premium-card" style="margin-bottom: 2.5rem; border-left: 4px solid #2563eb;">
+    <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">Set up your rental workspace</h2>
+    <p style="color: #6b7280; margin-bottom: 1rem;">Complete these steps to start managing your first property.</p>
+    <div style="display: grid; gap: 0.65rem;">
+        {% for item in onboarding %}
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            {% if item.done %}<span style="color: #059669; font-weight: 700;">✓</span><span style="color: #6b7280; text-decoration: line-through;">{{ item.label }}</span>{% else %}<span style="color: #9ca3af;">○</span><a href="{% url item.url %}" style="color: #2563eb; font-weight: 600;">{{ item.label }}</a>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
 
 <!-- Stats Grid -->
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
@@ -421,9 +405,9 @@
         <div class="stat-icon" style="background: #d1fae5; color: #10b981;">
             📊
         </div>
-        <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Occupancy Rate</div>
-        <div style="font-size: 2.75rem; font-weight: 800; color: #10b981; margin-bottom: 0.25rem; line-height: 1;">{{ stats.occupancy_rate|floatformat:1 }}%</div>
-        <div style="font-size: 0.875rem; color: #9ca3af; font-weight: 500;">{{ stats.occupied_units }}/{{ stats.total_units }} units occupied</div>
+        <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Occupied Units</div>
+        <div style="font-size: 2.75rem; font-weight: 800; color: #10b981; margin-bottom: 0.25rem; line-height: 1;">{{ stats.occupied_units }}</div>
+        <div style="font-size: 0.875rem; color: #9ca3af; font-weight: 500;">of {{ stats.total_units }} total units</div>
     </div>
 
     <!-- Rent Collected -->
@@ -445,27 +429,6 @@
         <div style="font-size: 2.75rem; font-weight: 800; color: #ef4444; margin-bottom: 0.25rem; line-height: 1;">{{ stats.pending_amount|floatformat:0|default:"0" }}</div>
         <div style="font-size: 0.875rem; color: #9ca3af; font-weight: 500;">KES Outstanding balance</div>
     </div>
-
-    <!-- Expenses -->
-    <div class="premium-stat-card" style="border-left-color: #8b5cf6;">
-        <div class="stat-icon" style="background: #ede9fe; color: #8b5cf6;">
-            💸
-        </div>
-        <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Expenses (MTD)</div>
-        <div style="font-size: 2.75rem; font-weight: 800; color: #8b5cf6; margin-bottom: 0.25rem; line-height: 1;">{{ stats.total_expenses|floatformat:0|default:"0" }}</div>
-        <div style="font-size: 0.875rem; color: #9ca3af; font-weight: 500;">KES This month's costs</div>
-    </div>
-
-    <!-- Net Profit -->
-    <div class="premium-stat-card" style="border-left-color: {% if stats.net_profit >= 0 %}#10b981{% else %}#ef4444{% endif %};">
-        <div class="stat-icon" style="background: {% if stats.net_profit >= 0 %}#d1fae5{% else %}#fee2e2{% endif %}; color: {% if stats.net_profit >= 0 %}#10b981{% else %}#ef4444{% endif %};">
-            {% if stats.net_profit >= 0 %}📈{% else %}📉{% endif %}
-        </div>
-        <div style="color: #6b7280; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Net Profit (MTD)</div>
-        <div style="font-size: 2.75rem; font-weight: 800; color: {% if stats.net_profit >= 0 %}#10b981{% else %}#ef4444{% endif %}; margin-bottom: 0.25rem; line-height: 1;">{{ stats.net_profit|floatformat:0|default:"0" }}</div>
-        <div style="font-size: 0.875rem; color: #9ca3af; font-weight: 500;">KES Revenue - Expenses</div>
-    </div>
-</div>
 
 <!-- Quick Actions -->
 <div class="premium-card" style="margin-bottom: 2.5rem;">

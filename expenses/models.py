@@ -1,4 +1,8 @@
 from django.db import models
+from django.db.models import Q
+from django.core.validators import MinValueValidator
+from decimal import Decimal
+from core.validators import validate_supporting_file
 from accounts.models import LandlordProfile
 
 
@@ -25,9 +29,9 @@ class Expense(models.Model):
     expense_property = models.ForeignKey('properties.Property', on_delete=models.SET_NULL, null=True, blank=True, related_name='expenses', help_text='Associated property (optional)')
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     description = models.TextField(help_text='Detailed description of the expense')
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
     expense_date = models.DateField(help_text='Date expense was incurred')
-    receipt = models.FileField(upload_to='expense_receipts/', null=True, blank=True, help_text='Upload receipt or supporting document')
+    receipt = models.FileField(upload_to='expense_receipts/', null=True, blank=True, validators=[validate_supporting_file], help_text='Upload receipt or supporting document')
     vendor_name = models.CharField(max_length=255, blank=True, help_text='Vendor/supplier name')
     vendor_contact = models.CharField(max_length=100, blank=True, help_text='Vendor contact')
     notes = models.TextField(blank=True, help_text='Additional notes')
@@ -37,6 +41,7 @@ class Expense(models.Model):
     class Meta:
         db_table = 'expenses'
         ordering = ['-expense_date', '-created_at']
+        constraints = [models.CheckConstraint(check=Q(amount__gt=0), name='expense_amount_positive')]
         verbose_name = 'Expense'
         verbose_name_plural = 'Expenses'
     

@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models import Q
+from django.core.validators import MinValueValidator
 from django.utils import timezone
 from tenants_mgmt.models import Lease
 import uuid
@@ -26,14 +28,14 @@ class Invoice(models.Model):
     due_date = models.DateField(help_text='Payment due date')
 
     # Bill Breakdown
-    rent_amount = models.DecimalField(max_digits=10, decimal_places=2, help_text='Monthly rent charge')
-    water_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text='Water charge for the month')
-    garbage_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text='Garbage collection fee')
-    other_charges = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text='Other charges (repairs, penalties, etc.)')
+    rent_amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0.00'))], help_text='Monthly rent charge')
+    water_amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0.00'))], default=0, help_text='Water charge for the month')
+    garbage_amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0.00'))], default=0, help_text='Garbage collection fee')
+    other_charges = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0.00'))], default=0, help_text='Other charges (repairs, penalties, etc.)')
 
     # Totals
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, editable=False, help_text='Total invoice amount')
-    amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text='Total amount paid against this invoice')
+    amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0, validators=[MinValueValidator(Decimal('0.00'))], help_text='Total amount paid against this invoice')
 
     # Status
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
@@ -54,6 +56,10 @@ class Invoice(models.Model):
         verbose_name = 'Invoice'
         verbose_name_plural = 'Invoices'
         unique_together = ['lease', 'billing_month']
+        constraints = [
+            models.CheckConstraint(check=Q(amount_paid__gte=0), name='invoice_amount_paid_nonnegative'),
+            models.CheckConstraint(check=Q(rent_amount__gte=0) & Q(water_amount__gte=0) & Q(garbage_amount__gte=0) & Q(other_charges__gte=0), name='invoice_charges_nonnegative'),
+        ]
 
     def save(self, *args, **kwargs):
         """Auto-generate invoice number and calculate totals"""

@@ -3,7 +3,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
 from django.contrib import messages
 from django.utils import timezone
+from decimal import Decimal, InvalidOperation
 from django.db import transaction
+from django.http import FileResponse
 from .models import Expense
 from properties.models import Property
 
@@ -33,7 +35,7 @@ class ExpenseListView(LoginRequiredMixin, View):
         if property_filter != 'all':
             try:
                 expenses = expenses.filter(expense_property_id=property_filter)
-            except ValueError:
+            except (ValueError, InvalidOperation, TypeError):
                 pass
         
         if month_filter:
@@ -43,7 +45,7 @@ class ExpenseListView(LoginRequiredMixin, View):
                     expense_date__year=filter_date.year,
                     expense_date__month=filter_date.month
                 )
-            except ValueError:
+            except (ValueError, InvalidOperation, TypeError):
                 pass
         
         # Calculate summary statistics
@@ -111,10 +113,10 @@ class ExpenseCreateView(LoginRequiredMixin, View):
         
         # Validate amount
         try:
-            amount = float(amount)
+            amount = Decimal(str(amount))
             if amount <= 0:
                 raise ValueError('Amount must be positive')
-        except ValueError:
+        except (ValueError, InvalidOperation, TypeError):
             messages.error(request, 'Invalid amount.')
             return redirect('expenses:create')
         
@@ -216,10 +218,10 @@ class ExpenseUpdateView(LoginRequiredMixin, View):
         
         # Validate amount
         try:
-            amount = float(amount)
+            amount = Decimal(str(amount))
             if amount <= 0:
                 raise ValueError('Amount must be positive')
-        except ValueError:
+        except (ValueError, InvalidOperation, TypeError):
             messages.error(request, 'Invalid amount.')
             return redirect('expenses:update', pk=pk)
         
@@ -272,3 +274,12 @@ class ExpenseDeleteView(LoginRequiredMixin, View):
         
         messages.success(request, f'{category} expense of KES {amount:,.2f} deleted successfully!')
         return redirect('expenses:list')
+
+class ExpenseReceiptView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        if not request.user.is_landlord:
+            return redirect('demo:home')
+        expense = get_object_or_404(Expense, pk=pk, landlord=request.landlord)
+        if not expense.receipt:
+            return redirect('expenses:detail', pk=pk)
+        return FileResponse(expense.receipt.open('rb'), as_attachment=False, filename=expense.receipt.name.rsplit('/', 1)[-1])

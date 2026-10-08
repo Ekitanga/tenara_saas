@@ -1,5 +1,7 @@
+from django.conf import settings
 from django.utils.deprecation import MiddlewareMixin
 from django.shortcuts import redirect
+from django.http import HttpResponseNotFound
 
 
 class TenantMiddleware(MiddlewareMixin):
@@ -9,6 +11,12 @@ class TenantMiddleware(MiddlewareMixin):
     """
 
     def process_request(self, request):
+        if request.path.startswith('/subscriptions/') and not settings.ENABLE_SUBSCRIPTIONS:
+            return HttpResponseNotFound('Subscriptions are not enabled in the core product.')
+        if request.path.startswith('/reminders/') and not settings.ENABLE_REMINDERS:
+            return HttpResponseNotFound('Reminders are not enabled in the core product.')
+        if request.path.startswith('/payments/mpesa/') and not settings.ENABLE_MPESA:
+            return HttpResponseNotFound('M-Pesa is not enabled in the core product.')
         """Process each request and attach profile"""
         
         # Initialize attributes
@@ -46,6 +54,8 @@ class TenantMiddleware(MiddlewareMixin):
                 # Create profile if doesn't exist
                 request.landlord = LandlordProfile.objects.create(user=request.user)
 
+            if settings.CORE_PRODUCT_MODE:
+                return None
             # Exempt certain paths from subscription checks
             exempt_paths = [
                 '/admin/',

@@ -6,9 +6,10 @@ from django.utils import timezone
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from django.http import JsonResponse, HttpResponse
-from decimal import Decimal
+from django.http import JsonResponse, HttpResponse, FileResponse
+from decimal import Decimal, InvalidOperation
 from .models import Payment
+from .services import confirm_payment
 from invoicing.models import Invoice
 import json
 import logging
@@ -139,7 +140,7 @@ class RecordManualPaymentView(LoginRequiredMixin, View):
             amount = Decimal(str(amount_str))
             if amount <= 0:
                 raise ValueError('Amount must be positive')
-        except (ValueError, Exception):
+        except (ValueError, TypeError, InvalidOperation):
             messages.error(request, 'Invalid amount.')
             return redirect('payments:record_manual')
 
@@ -162,16 +163,12 @@ class RecordManualPaymentView(LoginRequiredMixin, View):
             recorded_by=request.user,
             notes=notes,
             payment_proof=payment_proof,
-            status='confirmed',
+            status='pending',
             payment_date=payment_date,
-            confirmed_at=timezone.now(),
             transaction_id=reference_number or f'MANUAL-{timezone.now().strftime("%Y%m%d%H%M%S")}'
         )
 
-        # Update invoice amount_paid - ensure Decimal types
-        current_paid = Decimal(str(invoice.amount_paid or 0))
-        invoice.amount_paid = current_paid + amount
-        invoice.save()
+        confirm_payment(payment)
 
         messages.success(
             request,
@@ -186,7 +183,10 @@ class InitiateMpesaPaymentView(View):
 
     @transaction.atomic
     def post(self, request):
-        """Handle M-Pesa payment initiation"""
+        """Handle M-Pesa payment initiation."""
+        from django.conf import settings
+        if not settings.ENABLE_MPESA:
+            return JsonResponse({'success': False, 'message': 'M-Pesa is not enabled.'}, status=404)
 
         try:
             # Get data from request
@@ -209,7 +209,7 @@ class InitiateMpesaPaymentView(View):
                 amount = Decimal(str(amount_str))
                 if amount <= 0:
                     raise ValueError('Amount must be positive')
-            except (ValueError, Exception):
+            except (ValueError, TypeError, InvalidOperation):
                 return JsonResponse({
                     'success': False,
                     'message': 'Invalid amount'
@@ -224,25 +224,7 @@ class InitiateMpesaPaymentView(View):
             elif not phone_number.startswith('254'):
                 phone_number = '254' + phone_number
 
-            # Create pending payment record
-            payment = Payment.objects.create(
-                invoice=invoice,
-                amount=amount,
-                payment_method='mpesa',
-                phone_number=phone_number,
-                status='pending',
-                transaction_id=f'PENDING-{timezone.now().strftime("%Y%m%d%H%M%S")}'
-            )
-
-            # TODO: Actual M-Pesa API integration here
-            # For now, we'll simulate a successful response
-
-            return JsonResponse({
-                'success': True,
-                'message': 'M-Pesa payment initiated. Please check your phone for the payment prompt.',
-                'payment_id': payment.id,
-                'checkout_request_id': 'SIMULATED-CHECKOUT-ID'
-            })
+            return JsonResponse({'success': False, 'message': 'M-Pesa provider integration is not configured.'}, status=503)
 
         except Exception as e:
             logger.error(f'M-Pesa initiation error: {str(e)}')
@@ -293,9 +275,9 @@ class MpesaCallbackView(View):
 
             # Find payment record
             payment = Payment.objects.filter(
-                phone_number__icontains=str(phone_number)[-9:] if phone_number else '',
+                transaction_id=checkout_request_id,
                 status='pending'
-            ).order_by('-created_at').first()
+            ).first()
 
             if not payment:
                 logger.warning(f'Payment not found for callback: {callback_data}')
@@ -304,17 +286,7 @@ class MpesaCallbackView(View):
             # Check result code
             if result_code == 0:
                 # Payment successful
-                payment.status = 'confirmed'
-                payment.mpesa_receipt_number = mpesa_receipt
-                payment.transaction_id = mpesa_receipt
-                payment.confirmed_at = timezone.now()
-                payment.save()
-
-                # Update invoice - ensure Decimal types
-                current_paid = Decimal(str(payment.invoice.amount_paid or 0))
-                payment_amount = Decimal(str(payment.amount or 0))
-                payment.invoice.amount_paid = current_paid + payment_amount
-                payment.invoice.save()
+                confirm_payment(payment, receipt_number=str(mpesa_receipt or ''))
 
                 logger.info(f'Payment {payment.id} confirmed via M-Pesa: {mpesa_receipt}')
 
@@ -407,3 +379,12 @@ class DeletePaymentView(LoginRequiredMixin, View):
 
         messages.success(request, 'Payment record deleted successfully!')
         return redirect('invoicing:detail', pk=invoice_pk)
+
+class PaymentProofView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        if not request.user.is_landlord:
+            return redirect('demo:home')
+        payment = get_object_or_404(Payment, pk=pk, invoice__lease__unit__unit_property__landlord=request.landlord)
+        if not payment.payment_proof:
+            return redirect('payments:payment_list')
+        return FileResponse(payment.payment_proof.open('rb'), as_attachment=False, filename=payment.payment_proof.name.rsplit('/', 1)[-1])

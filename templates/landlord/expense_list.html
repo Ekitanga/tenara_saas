@@ -212,7 +212,7 @@
                         <td data-label="Amount" style="padding: 1rem; font-weight: 700; color: #dc2626; font-size: 1.125rem;">KES {{ expense.amount|floatformat:0 }}</td>
                         <td data-label="Receipt" style="padding: 1rem;">
                             {% if expense.receipt %}
-                            <a href="{{ expense.receipt.url }}" target="_blank" style="color: #2563eb; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; transition: color 0.2s;" onmouseover="this.style.color='#1d4ed8'" onmouseout="this.style.color='#2563eb'">
+                            <a href="{% url 'expenses:receipt' expense.pk %}" target="_blank" style="color: #2563eb; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; transition: color 0.2s;" onmouseover="this.style.color='#1d4ed8'" onmouseout="this.style.color='#2563eb'">
                                 <span style="font-size: 1.25rem;">📎</span> View
                             </a>
                             {% else %}

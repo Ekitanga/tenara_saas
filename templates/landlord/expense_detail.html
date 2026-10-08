@@ -93,7 +93,7 @@
     <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 2rem;">
         <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Receipt / Supporting Document</h2>
         
-        <a href="{{ expense.receipt.url }}" target="_blank" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 1rem 1.5rem; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; text-decoration: none; color: #1f2937; font-weight: 600;">
+        <a href="{% url 'expenses:receipt' expense.pk %}" target="_blank" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 1rem 1.5rem; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; text-decoration: none; color: #1f2937; font-weight: 600;">
             <span style="font-size: 1.5rem;">📎</span>
             View Receipt
         </a>

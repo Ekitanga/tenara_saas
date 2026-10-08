@@ -12,6 +12,7 @@ urlpatterns = [
     # Core
     path('', include('demo.urls')),
     path('dashboard/', core_views.dashboard, name='dashboard'),
+    path('healthz/', core_views.healthz, name='healthz'),
     
     # Apps
     path('accounts/', include('accounts.urls')),

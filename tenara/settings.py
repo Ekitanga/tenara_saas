@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from decouple import config
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -15,7 +16,8 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-produc
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = [host.strip() for host in config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',') if host.strip()]
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in config('CSRF_TRUSTED_ORIGINS', default='').split(',') if origin.strip()]
 
 
 # Application definition
@@ -96,17 +98,29 @@ if DEBUG:
         }
     }
 else:
-    # PostgreSQL for production
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('DB_NAME', default='tenara_db'),
-            'USER': config('DB_USER', default='postgres'),
-            'PASSWORD': config('DB_PASSWORD', default='postgres'),
-            'HOST': config('DB_HOST', default='localhost'),
-            'PORT': config('DB_PORT', default='5432'),
+    # PostgreSQL for production. Managed hosts commonly provide DATABASE_URL;
+    # the individual DB_* variables remain supported for self-hosted installs.
+    database_url = config('DATABASE_URL', default='')
+    if database_url:
+        DATABASES = {
+            'default': dj_database_url.parse(
+                database_url,
+                conn_max_age=config('DB_CONN_MAX_AGE', default=60, cast=int),
+            )
         }
-    }
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': config('DB_NAME', default='tenara_db'),
+                'USER': config('DB_USER', default='postgres'),
+                'PASSWORD': config('DB_PASSWORD', default='postgres'),
+                'HOST': config('DB_HOST', default='localhost'),
+                'PORT': config('DB_PORT', default='5432'),
+                'CONN_MAX_AGE': config('DB_CONN_MAX_AGE', default=60, cast=int),
+                'OPTIONS': {'sslmode': config('DB_SSLMODE', default='prefer')},
+            }
+        }
 
 
 # Custom User Model
@@ -161,6 +175,13 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
+# Product scope flags. Core mode keeps the first release focused on rental operations.
+CORE_PRODUCT_MODE = config('CORE_PRODUCT_MODE', default=True, cast=bool)
+ENABLE_SUBSCRIPTIONS = config('ENABLE_SUBSCRIPTIONS', default=False, cast=bool)
+ENABLE_REMINDERS = config('ENABLE_REMINDERS', default=False, cast=bool)
+ENABLE_MPESA = config('ENABLE_MPESA', default=False, cast=bool)
+ENABLE_SMS = config('ENABLE_SMS', default=False, cast=bool)
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
@@ -210,8 +231,24 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@tenara.co.ke')
 
 
+# Shared cache: production rate limiting must use Redis when the app is scaled.
+REDIS_URL = config('REDIS_URL', default='')
+if REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': REDIS_URL,
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'tenara-local-cache',
+        }
+    }
 # Celery Configuration
-CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='redis://localhost:6379/0')
+CELERY_BROKER_URL = config('CELERY_BROKER_URL', default=REDIS_URL or 'redis://localhost:6379/0')
 CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND', default='redis://localhost:6379/0')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
@@ -232,7 +269,12 @@ SESSION_SAVE_EVERY_REQUEST = True
 
 # Security Settings for Production
 if not DEBUG:
+    if SECRET_KEY == 'django-insecure-change-this-in-production':
+        raise RuntimeError('SECRET_KEY must be set when DEBUG=False.')
+    if not ALLOWED_HOSTS:
+        raise RuntimeError('ALLOWED_HOSTS must be set when DEBUG=False.')
     SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
@@ -244,6 +286,8 @@ if not DEBUG:
 
 
 # Logging Configuration
+LOGS_DIR = BASE_DIR / 'logs'
+LOGS_DIR.mkdir(parents=True, exist_ok=True)
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -281,7 +325,5 @@ LOGGING = {
 }
 
 
-# Create logs directory if it doesn't exist
-LOGS_DIR = BASE_DIR / 'logs'
 if not LOGS_DIR.exists():
     LOGS_DIR.mkdir(parents=True, exist_ok=True)
