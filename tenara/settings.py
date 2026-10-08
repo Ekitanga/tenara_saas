@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from decouple import config
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -97,19 +98,29 @@ if DEBUG:
         }
     }
 else:
-    # PostgreSQL for production
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('DB_NAME', default='tenara_db'),
-            'USER': config('DB_USER', default='postgres'),
-            'PASSWORD': config('DB_PASSWORD', default='postgres'),
-            'HOST': config('DB_HOST', default='localhost'),
-            'PORT': config('DB_PORT', default='5432'),
-            'CONN_MAX_AGE': config('DB_CONN_MAX_AGE', default=60, cast=int),
-            'OPTIONS': {'sslmode': config('DB_SSLMODE', default='prefer')},
+    # PostgreSQL for production. Managed hosts commonly provide DATABASE_URL;
+    # the individual DB_* variables remain supported for self-hosted installs.
+    database_url = config('DATABASE_URL', default='')
+    if database_url:
+        DATABASES = {
+            'default': dj_database_url.parse(
+                database_url,
+                conn_max_age=config('DB_CONN_MAX_AGE', default=60, cast=int),
+            )
         }
-    }
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': config('DB_NAME', default='tenara_db'),
+                'USER': config('DB_USER', default='postgres'),
+                'PASSWORD': config('DB_PASSWORD', default='postgres'),
+                'HOST': config('DB_HOST', default='localhost'),
+                'PORT': config('DB_PORT', default='5432'),
+                'CONN_MAX_AGE': config('DB_CONN_MAX_AGE', default=60, cast=int),
+                'OPTIONS': {'sslmode': config('DB_SSLMODE', default='prefer')},
+            }
+        }
 
 
 # Custom User Model
@@ -259,6 +270,8 @@ if not DEBUG:
 
 
 # Logging Configuration
+LOGS_DIR = BASE_DIR / 'logs'
+LOGS_DIR.mkdir(parents=True, exist_ok=True)
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -296,7 +309,5 @@ LOGGING = {
 }
 
 
-# Create logs directory if it doesn't exist
-LOGS_DIR = BASE_DIR / 'logs'
 if not LOGS_DIR.exists():
     LOGS_DIR.mkdir(parents=True, exist_ok=True)
